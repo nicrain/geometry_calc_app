@@ -1,4 +1,5 @@
 import tkinter as tk
+from math import pi, cos, sin
 
 class MetroButton(tk.Canvas):
     def __init__(self, master=None, **kwargs):
@@ -9,35 +10,29 @@ class MetroButton(tk.Canvas):
         self.command = kwargs.pop('command', None)
         self._font = kwargs.pop('font', ('Arial', 14, 'bold'))
         
-        # 获取尺寸设置或使用默认值
-        width = kwargs.pop('width', 200) * 2  # 放大按钮宽度
-        height = kwargs.pop('height', 40) * 1.5  # 放大按钮高度
+        # 尺寸设置
+        width = kwargs.pop('width', 120)
+        height = kwargs.pop('height', 36)
         
-        # Canvas默认配置
+        # Canvas配置
         canvas_config = {
             'height': height,
             'width': width,
             'highlightthickness': 0,
-            'bg': self._bg_color
+            'bg': '#ffffff'
         }
         
-        # 仅保留Canvas支持的选项
         valid_keys = ['height', 'width', 'highlightthickness', 'bg']
-        for key in list(kwargs.keys()):
-            if key not in valid_keys:
-                kwargs.pop(key)
-                
+        kwargs = {k: v for k, v in kwargs.items() if k in valid_keys}
         canvas_config.update(kwargs)
-        super().__init__(master, **canvas_config)
         
-        # 绑定事件
-        self.bind('<Configure>', self._on_resize)  # 添加大小改变事件
+        super().__init__(master, **canvas_config)
+        self.bind('<Configure>', self._on_resize)
         self.bind('<Enter>', self._on_enter)
         self.bind('<Leave>', self._on_leave)
         self.bind('<Button-1>', self._on_click)
         self.bind('<ButtonRelease-1>', self._on_release)
         
-        # 初始绘制
         self._draw()
     
     def _on_resize(self, event):
@@ -45,12 +40,10 @@ class MetroButton(tk.Canvas):
         self._draw()
         
     def _draw(self, state='normal'):
-        self.delete('all')  # 清除所有图形
-        
+        self.delete('all')
         width = self.winfo_width()
         height = self.winfo_height()
         
-        # 根据状态选择颜色
         if state == 'hover':
             bg_color = self._lighten_color(self._bg_color)
         elif state == 'pressed':
@@ -58,14 +51,27 @@ class MetroButton(tk.Canvas):
         else:
             bg_color = self._bg_color
             
-        # 添加圆角矩形背景
-        radius = 10  # 圆角半径
-        self.create_rounded_rectangle(0, 0, width, height, radius, fill=bg_color, outline=bg_color)
+        radius = min(height/6, 10)
+        offset = 1
         
-        # 绘制文本
+        # 阴影
+        self.create_rectangle(
+            offset, offset, width, height,
+            fill='#444444', outline='#444444'
+        )
+        
+        # 主体按钮
+        self.create_rounded_rectangle(
+            0, 0, width-offset, height-offset,
+            radius, 
+            fill=bg_color,
+            outline=bg_color
+        )
+        
+        # 文本
         self.create_text(
-            width / 2,
-            height / 2,
+            width/2 - offset/2,
+            height/2 - offset/2,
             text=self.text,
             fill=self._fg_color,
             font=self._font,
@@ -116,9 +122,9 @@ class MetroButton(tk.Canvas):
         return color_map.get(color, color)
 
     def create_rounded_rectangle(self, x1, y1, x2, y2, radius, **kwargs):
-        # 绘制圆角矩形
         points = [
-            x1+radius, y1,
+            x1+radius, y1,  # 左上角开始
+            x2-radius, y1,
             x2-radius, y1,
             x2, y1,
             x2, y1+radius,

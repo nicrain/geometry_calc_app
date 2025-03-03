@@ -39,11 +39,11 @@ class CalculatorModule(BaseModule):
         buttons_frame = tk.Frame(self.frame, bg='white')
         buttons_frame.pack(padx=20, pady=10, fill='both', expand=True)
         
-        # 按钮基础配置
+        # 更新按钮基础配置
         button_configs = {
-            'width': 80,    # 固定宽度像素值
-            'height': 60,   # 固定高度像素值
-            'font': ('Arial', 18, 'bold')  # 更大的字体
+            'width': 60,     # 减小宽度
+            'height': 40,    # 减小高度
+            'font': ('Arial', 16, 'bold')  # 调整字体大小
         }
         
         # 使用更高对比度的颜色方案
@@ -56,8 +56,8 @@ class CalculatorModule(BaseModule):
         
         # 设置网格布局的间距
         for i in range(4):
-            buttons_frame.grid_columnconfigure(i, weight=1, pad=10)
-            buttons_frame.grid_rowconfigure(i, weight=1, pad=10)
+            buttons_frame.grid_columnconfigure(i, weight=1, pad=5)  # 减小间距
+            buttons_frame.grid_rowconfigure(i, weight=1, pad=5)     # 减小间距
             
         # 创建按钮
         for i, (button_text, color) in enumerate(buttons):
@@ -72,7 +72,7 @@ class CalculatorModule(BaseModule):
                 command=cmd,
                 **button_configs
             )
-            btn.grid(row=row, column=col, padx=5, pady=5, sticky='nsew')
+            btn.grid(row=row, column=col, padx=2, pady=2, sticky='nsew')  # 减小边距
     
     def click_button(self, value):
         # 实现计算器按钮点击功能

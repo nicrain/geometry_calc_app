@@ -37,43 +37,43 @@ class GeometryModule(BaseModule):
         self.create_canvas()
         
     def create_geometry_tools(self):
-        # 工具按钮区域
         tools_frame = tk.Frame(self.content)
-        tools_frame.pack(side="left", fill="y", padx=10, pady=10)
+        tools_frame.pack(side="left", fill="y", padx=5, pady=5)
         
-        # 使用更高对比度的颜色 - 确保使用大写的十六进制颜色码
+        button_configs = {
+            'width': 100,
+            'height': 32,
+            'font': ('Arial', 12, 'bold')
+        }
+        
         self.circle_button = MetroButton(
             tools_frame,
             text="Cercle",
-            bg="#1B5E20",  # 深墨绿色
-            fg="#FFFFFF",  # 纯白色
-            command=lambda: self.select_shape("circle")
+            bg="#1B5E20",
+            fg="#FFFFFF",
+            command=lambda: self.select_shape("circle"),
+            **button_configs
         )
-        self.circle_button.pack(pady=5, fill="x")
+        self.circle_button.pack(pady=3, fill="x")
         
         self.square_button = MetroButton(
             tools_frame,
             text="Carré",
-            bg="#1A237E",  # 深靛蓝色
-            fg="#FFFFFF",  # 纯白色
-            command=lambda: self.select_shape("square")
+            bg="#1A237E",
+            fg="#FFFFFF",
+            command=lambda: self.select_shape("square"),
+            **button_configs
         )
-        self.square_button.pack(pady=5, fill="x")
+        self.square_button.pack(pady=3, fill="x")
         
-        # 删除按钮
-        clear_button = MetroButton(
+        MetroButton(
             tools_frame,
             text="Effacer",
-            bg="#B71C1C",  # 深红色
-            fg="#FFFFFF",  # 纯白色
-            command=self.clear_canvas
-        )
-        clear_button.pack(pady=5, fill="x")
-        
-        # 打印按钮颜色确认
-        print(f"Circle button color: {self.circle_button['bg']}")
-        print(f"Square button color: {self.square_button['bg']}")
-        print(f"Clear button color: {clear_button['bg']}")
+            bg="#B71C1C",
+            fg="#FFFFFF",
+            command=self.clear_canvas,
+            **button_configs
+        ).pack(pady=3, fill="x")
     
     def create_canvas(self):
         # 创建画布容器
