@@ -19,10 +19,10 @@ class MainApp:
         self.root.title("Logiciel de Géométrie & Calcul pour Enfants")
         self.root.geometry("1024x768")  # 更大的窗口尺寸
         
-        # Metro风格的颜色
+        # 更新 Metro 风格的颜色，使用更深的色调
         self.colors = {
-            'geometry': '#00A300',  # 绿色
-            'calculator': '#2D89EF',  # 蓝色
+            'geometry': '#1B5E20',  # 深墨绿色
+            'calculator': '#1A237E',  # 深靛蓝色
         }
         
         # 创建主容器

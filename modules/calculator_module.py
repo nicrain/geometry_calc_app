@@ -25,43 +25,54 @@ class CalculatorModule(BaseModule):
         # 创建显示结果的文本框
         self.result_var = tk.StringVar()
         self.result_var.set("0")
-        result_display = tk.Entry(self.frame, textvariable=self.result_var, font=("Arial", 20), justify="right")
-        result_display.pack(fill="x", padx=20, pady=10)
+        result_display = tk.Entry(
+            self.frame,
+            textvariable=self.result_var,
+            font=("Arial", 32),  # 更大的字体
+            justify="right",
+            bd=2,
+            relief="solid"
+        )
+        result_display.pack(fill="x", padx=20, pady=20)
         
-        # 创建数字按钮
-        buttons_frame = tk.Frame(self.frame)
-        buttons_frame.pack(padx=20, pady=10)
+        # 创建数字按钮容器
+        buttons_frame = tk.Frame(self.frame, bg='white')
+        buttons_frame.pack(padx=20, pady=10, fill='both', expand=True)
         
-        # 使用Metro风格按钮创建计算器界面
+        # 按钮基础配置
+        button_configs = {
+            'width': 80,    # 固定宽度像素值
+            'height': 60,   # 固定高度像素值
+            'font': ('Arial', 18, 'bold')  # 更大的字体
+        }
+        
+        # 使用更高对比度的颜色方案
         buttons = [
-            ('7', '#2D89EF'), ('8', '#2D89EF'), ('9', '#2D89EF'), ('/', '#2D89EF'),
-            ('4', '#2D89EF'), ('5', '#2D89EF'), ('6', '#2D89EF'), ('*', '#2D89EF'),
-            ('1', '#2D89EF'), ('2', '#2D89EF'), ('3', '#2D89EF'), ('-', '#2D89EF'),
-            ('0', '#2D89EF'), ('.', '#2D89EF'), ('=', '#00A300'), ('+', '#2D89EF')
+            ('7', '#1A237E'), ('8', '#1A237E'), ('9', '#1A237E'), ('/', '#311B92'),
+            ('4', '#1A237E'), ('5', '#1A237E'), ('6', '#1A237E'), ('*', '#311B92'),
+            ('1', '#1A237E'), ('2', '#1A237E'), ('3', '#1A237E'), ('-', '#311B92'),
+            ('0', '#1A237E'), ('.', '#1A237E'), ('=', '#1B5E20'), ('+', '#311B92')
         ]
         
-        row = 0
-        col = 0
-        for button_text, color in buttons:
+        # 设置网格布局的间距
+        for i in range(4):
+            buttons_frame.grid_columnconfigure(i, weight=1, pad=10)
+            buttons_frame.grid_rowconfigure(i, weight=1, pad=10)
+            
+        # 创建按钮
+        for i, (button_text, color) in enumerate(buttons):
+            row = i // 4
+            col = i % 4
             cmd = lambda x=button_text: self.click_button(x)
-            MetroButton(
+            btn = MetroButton(
                 buttons_frame,
                 text=button_text,
                 bg=color,
                 fg='white',
-                width=8,
-                height=3,
-                command=cmd
-            ).grid(row=row, column=col, padx=5, pady=5)
-            col += 1
-            if col > 3:
-                col = 0
-                row += 1
-                
-        # 配置网格布局权重
-        for i in range(4):
-            buttons_frame.grid_columnconfigure(i, weight=1)
-            buttons_frame.grid_rowconfigure(i, weight=1)
+                command=cmd,
+                **button_configs
+            )
+            btn.grid(row=row, column=col, padx=5, pady=5, sticky='nsew')
     
     def click_button(self, value):
         # 实现计算器按钮点击功能

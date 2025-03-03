@@ -41,12 +41,12 @@ class GeometryModule(BaseModule):
         tools_frame = tk.Frame(self.content)
         tools_frame.pack(side="left", fill="y", padx=10, pady=10)
         
-        # 存储按钮引用以便后续更新状态
+        # 使用更高对比度的颜色 - 确保使用大写的十六进制颜色码
         self.circle_button = MetroButton(
             tools_frame,
             text="Cercle",
-            bg="#00A300",
-            fg="white",
+            bg="#1B5E20",  # 深墨绿色
+            fg="#FFFFFF",  # 纯白色
             command=lambda: self.select_shape("circle")
         )
         self.circle_button.pack(pady=5, fill="x")
@@ -54,19 +54,26 @@ class GeometryModule(BaseModule):
         self.square_button = MetroButton(
             tools_frame,
             text="Carré",
-            bg="#2D89EF",
-            fg="white",
+            bg="#1A237E",  # 深靛蓝色
+            fg="#FFFFFF",  # 纯白色
             command=lambda: self.select_shape("square")
         )
         self.square_button.pack(pady=5, fill="x")
         
-        MetroButton(
+        # 删除按钮
+        clear_button = MetroButton(
             tools_frame,
             text="Effacer",
-            bg="#E51400",
-            fg="white",
+            bg="#B71C1C",  # 深红色
+            fg="#FFFFFF",  # 纯白色
             command=self.clear_canvas
-        ).pack(pady=5, fill="x")
+        )
+        clear_button.pack(pady=5, fill="x")
+        
+        # 打印按钮颜色确认
+        print(f"Circle button color: {self.circle_button['bg']}")
+        print(f"Square button color: {self.square_button['bg']}")
+        print(f"Clear button color: {clear_button['bg']}")
     
     def create_canvas(self):
         # 创建画布容器
