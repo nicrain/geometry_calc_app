@@ -16,7 +16,7 @@
 1. 克隆仓库：
 
 ```bash
-git clone https://github.com/your-repo/geometry-calc-app.git
+git clone https://github.com/nicrain/geometry_calc_app.git
 cd geometry-calc-app
 ```
 
