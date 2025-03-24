@@ -4,3 +4,9 @@ opencv-python         # 图像处理，可能需要处理眼动数据
 numpy                 # 数学运算和几何计算
 pillow                # 图像处理库，万一后期需要
 pyttsx3               # 语音反馈模块（如果要实现语音提示）
+PyQt6                 # GUI 界面库
+mediapipe             # 眼动追踪预留接口
+opencv-python         # 图像处理，可能需要处理眼动数据
+numpy                 # 数学运算和几何计算
+pillow                # 图像处理库，万一后期需要
+pyttsx3               # 语音反馈模块（如果要实现语音提示）
