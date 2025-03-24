@@ -110,10 +110,36 @@ class CalculatorModule(BaseModule):
         # 实现计算器按钮点击功能
         if value == '=':
             try:
-                result = eval(self.result_display.text())
+                # 安全地计算表达式
+                expression = self.result_display.text()
+                # 替换乘除符号为Python可识别的符号
+                expression = expression.replace('×', '*').replace('÷', '/')
+                result = eval(expression)
+                
+                # 格式化结果，避免过长的小数
+                if isinstance(result, float):
+                    # 如果是整数值的浮点数，转换为整数
+                    if result.is_integer():
+                        result = int(result)
+                    else:
+                        # 限制小数位数为6位
+                        result = round(result, 6)
+                
                 self.result_display.setText(str(result))
-            except:
+            except Exception as e:
                 self.result_display.setText("Error")
+                print(f"计算错误: {e}")
+        elif value == 'C':
+            # 清除当前输入
+            self.result_display.setText("0")
+        elif value == '←':
+            # 退格功能
+            current_text = self.result_display.text()
+            if current_text != "0" and current_text != "Error":
+                if len(current_text) == 1:
+                    self.result_display.setText("0")
+                else:
+                    self.result_display.setText(current_text[:-1])
         else:
             current_text = self.result_display.text()
             if current_text == "0" or current_text == "Error":

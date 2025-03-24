@@ -45,6 +45,14 @@ class Canvas(QWidget):
         
         # 线段绘制的起始点
         self.line_start_point = None
+        
+        # 存储绘制的形状
+        self.shapes = []
+        
+        # 坐标轴设置
+        self.show_axes = True  # 是否显示坐标轴
+        self.grid_spacing = 50  # 网格间距
+        self.axis_color = "#555555"  # 坐标轴颜色
     
     def clear(self):
         """清除画布上的所有内容"""
@@ -60,12 +68,62 @@ class Canvas(QWidget):
         self.line_start_point = None
         self.update()  # 重绘画布
         
+    def draw_coordinate_axes(self, painter):
+        """绘制坐标轴"""
+        # 获取画布中心点
+        center_x = self.width() // 2
+        center_y = self.height() // 2
+        
+        # 设置坐标轴样式
+        painter.setPen(QPen(QColor(self.axis_color), 1))
+        
+        # 绘制X轴
+        painter.drawLine(0, center_y, self.width(), center_y)
+        
+        # 绘制Y轴
+        painter.drawLine(center_x, 0, center_x, self.height())
+        
+        # 绘制刻度和标签
+        painter.setFont(QFont("Arial", 8))
+        
+        # X轴刻度和标签
+        for i in range(-10, 11):
+            x = center_x + i * self.grid_spacing
+            if 0 <= x <= self.width():
+                # 绘制刻度线
+                painter.drawLine(x, center_y - 5, x, center_y + 5)
+                
+                # 绘制标签，但跳过原点(0)
+                if i != 0:
+                    painter.drawText(QRect(x - 10, center_y + 10, 20, 15), 
+                                    Qt.AlignmentFlag.AlignCenter, str(i))
+        
+        # Y轴刻度和标签
+        for i in range(-10, 11):
+            y = center_y + i * self.grid_spacing
+            if 0 <= y <= self.height():
+                # 绘制刻度线
+                painter.drawLine(center_x - 5, y, center_x + 5, y)
+                
+                # 绘制标签，但跳过原点(0)，注意Y轴向下为正，所以标签要取负值
+                if i != 0:
+                    painter.drawText(QRect(center_x + 10, y - 10, 20, 20), 
+                                    Qt.AlignmentFlag.AlignCenter, str(-i))
+        
+        # 在原点绘制O标记
+        painter.drawText(QRect(center_x + 10, center_y + 10, 15, 15), 
+                        Qt.AlignmentFlag.AlignCenter, "O")
+        
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
         # 绘制白色背景
         painter.fillRect(self.rect(), Qt.GlobalColor.white)
+        
+        # 绘制坐标轴
+        if self.show_axes:
+            self.draw_coordinate_axes(painter)
         
         # 绘制已保存的点
         for point in self.points:
@@ -269,7 +327,15 @@ class GeometryModule(BaseModule):
         clear_button.setMinimumSize(110, 110)
         clear_button.setFont(QFont("Arial", 12, weight=QFont.Weight.Bold))
         clear_button.clicked.connect(self.canvas.clear)
-        tools_frame.layout().addWidget(clear_button)
+        tools_frame.layout().addWidget(clear_button, 3, 0)
+        
+        # 添加坐标轴切换按钮
+        self.axes_button = MetroButton("Axes", "#607D8B", "#FFFFFF")
+        self.axes_button.setMinimumSize(110, 110)
+        self.axes_button.setFont(QFont("Arial", 12, weight=QFont.Weight.Bold))
+        self.axes_button.clicked.connect(self.toggle_axes)
+        self.axes_button.set_active(self.canvas.show_axes)  # 根据当前状态设置按钮状态
+        tools_frame.layout().addWidget(self.axes_button, 3, 1)
         
         # 添加弹性空间
         spacer = QWidget()
@@ -319,3 +385,9 @@ class GeometryModule(BaseModule):
                 parent.back_to_home()
                 break
             parent = parent.parent()
+    
+    def toggle_axes(self):
+        """切换坐标轴显示状态"""
+        self.canvas.show_axes = not self.canvas.show_axes
+        self.axes_button.set_active(self.canvas.show_axes)
+        self.canvas.update()  # 重绘画布
