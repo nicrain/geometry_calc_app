@@ -1,33 +1,31 @@
+#!/usr/bin/env python3
+"""
+几何计算应用程序 - 为儿童设计的几何和计算工具
+
+这个应用程序集成了几何模块和计算器模块，
+提供了简单直观的界面，适合儿童学习使用。
+"""
+
 import sys
-from pathlib import Path
+
+# 导入Qt模块
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
-                             QHBoxLayout, QGridLayout, QLabel, QFrame)
-from PyQt6.QtCore import Qt, QSize
+                            QGridLayout, QMessageBox)
 from PyQt6.QtGui import QFont
 
-# 添加项目根目录到Python路径
-current_dir = Path(__file__).parent
-if str(current_dir) not in sys.path:
-    sys.path.append(str(current_dir))
-
-# 导入UI组件
-from modules.ui_components_pyqt import MetroButton, BaseModule
-
-# 导入功能模块
+# 导入UI组件和功能模块
+from modules.ui_components_pyqt import MetroButton
 from modules.geometry_module_pyqt import GeometryModule
 from modules.calculator_module_pyqt import CalculatorModule
-# from modules.eye_tracker_module import EyeTrackerModule
-# from modules.feedback_module import show_feedback
-
-# MetroButton和BaseModule类已移动到modules/ui_components_pyqt.py
 
 class MainApp(QMainWindow):
+    """主应用程序类，管理应用程序的主界面和模块切换"""
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Logiciel de Géométrie & Calcul pour Enfants")
-        self.resize(1024, 768)  # 更大的窗口尺寸
+        self.resize(1024, 768)
         
-        # 更新 Metro 风格的颜色，使用更深的色调
+        # Metro 风格的颜色方案
         self.colors = {
             'geometry': '#1B5E20',  # 深墨绿色
             'calculator': '#1A237E',  # 深靛蓝色
@@ -35,6 +33,10 @@ class MainApp(QMainWindow):
             'undo': '#FF5722',       # 撤销按钮橙色
         }
         
+        self._setup_ui()
+        
+    def _setup_ui(self):
+        """设置用户界面"""
         # 创建主容器
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -42,32 +44,30 @@ class MainApp(QMainWindow):
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.central_widget.setStyleSheet("background-color: #FFFFFF;")
         
-        # 创建主页面容器
+        # 创建主页面和模块页面容器
         self.home_widget = QWidget()
         self.home_layout = QVBoxLayout(self.home_widget)
         self.main_layout.addWidget(self.home_widget)
         
-        # 创建模块页面容器
         self.module_widget = QWidget()
         self.module_layout = QVBoxLayout(self.module_widget)
-        self.module_widget.hide()  # 初始隐藏模块页面
+        self.module_widget.hide()
         self.main_layout.addWidget(self.module_widget)
         
         # 初始化模块
         self.geometry_module = GeometryModule()
         self.calculator_module = CalculatorModule()
         
-        # 将模块添加到模块页面布局中，但初始时都隐藏
         self.module_layout.addWidget(self.geometry_module)
         self.module_layout.addWidget(self.calculator_module)
         self.geometry_module.hide()
         self.calculator_module.hide()
         
-        # 创建主页面大按钮
-        self.create_home_buttons()
+        # 创建主页面按钮
+        self._create_home_buttons()
 
-    def create_home_buttons(self):
-        # 创建主页面的大按钮
+    def _create_home_buttons(self):
+        """创建主页面的大按钮"""
         button_frame = QWidget()
         button_layout = QGridLayout(button_frame)
         button_layout.setContentsMargins(50, 50, 50, 50)
@@ -96,35 +96,35 @@ class MainApp(QMainWindow):
         button_layout.setVerticalSpacing(30)
 
     def show_home(self):
-        # 隐藏模块页面，显示主页面
+        """显示主页面"""
         self.module_widget.hide()
         self.home_widget.show()
         
     def show_geometry_module(self):
-        # 隐藏主页面，显示模块页面
+        """显示几何模块"""
         self.home_widget.hide()
         self.module_widget.show()
-        
-        # 显示几何模块
         self.calculator_module.hide_module()
         self.geometry_module.show_module()
         
     def show_calculator_module(self):
-        # 隐藏主页面，显示模块页面
+        """显示计算器模块"""
         self.home_widget.hide()
         self.module_widget.show()
-        
-        # 显示计算器模块
         self.geometry_module.hide_module()
         self.calculator_module.show_module()
         
     def back_to_home(self):
-        # 返回主页面
+        """返回主页面"""
         self.module_widget.hide()
         self.home_widget.show()
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = MainApp()
-    window.show()
-    sys.exit(app.exec())
+    try:
+        app = QApplication(sys.argv)
+        window = MainApp()
+        window.show()
+        sys.exit(app.exec())
+    except Exception as e:
+        print(f"启动应用程序时出错: {str(e)}")
+        sys.exit(1)

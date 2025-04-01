@@ -1,17 +1,17 @@
 import sys
 from pathlib import Path
+
+# 获取项目根目录
+PROJECT_ROOT = Path(__file__).parent.parent.absolute()
+
+# 导入PyQt6模块
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, 
                              QLabel, QLineEdit, QFrame)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 
-# 添加项目根目录到Python路径
-project_root = Path(__file__).parent.parent
-if str(project_root) not in sys.path:
-    sys.path.append(str(project_root))
-
 # 导入自定义组件
-from modules.ui_components_pyqt import BaseModule, MetroButton
+from modules.ui_components_pyqt import BaseModule, MetroButton, COLOR_MAP
 
 class CalculatorModule(BaseModule):
     def __init__(self, parent=None):
@@ -35,18 +35,12 @@ class CalculatorModule(BaseModule):
         content_layout = QHBoxLayout()
         self.main_layout.addLayout(content_layout)
         
-        
-        
-        
-
-        
-        
         # 创建计算器主区域
         calc_frame = QWidget()
         calc_layout = QVBoxLayout(calc_frame)
         calc_layout.setContentsMargins(10, 10, 10, 10)
         calc_frame.setMinimumWidth(510)  # 设置最小宽度
-        content_layout.addWidget(calc_frame)  # 1表示拉伸因子
+        content_layout.addWidget(calc_frame)
         
         # 创建显示结果的文本框
         self.result_display = QLineEdit("0")
@@ -78,8 +72,6 @@ class CalculatorModule(BaseModule):
             ('0', '#1A237E'), ('.', '#1A237E'), ('=', '#1B5E20'), ('+', '#311B92')
         ]
 
-        
-        
         # 创建按钮
         for i, (button_text, color) in enumerate(buttons):
             row = i // 4
@@ -107,45 +99,55 @@ class CalculatorModule(BaseModule):
         content_layout.addStretch(1)
     
     def click_button(self, value):
-        # 实现计算器按钮点击功能
+        """实现计算器按钮点击功能"""
         if value == '=':
-            try:
-                # 安全地计算表达式
-                expression = self.result_display.text()
-                # 替换乘除符号为Python可识别的符号
-                expression = expression.replace('×', '*').replace('÷', '/')
-                result = eval(expression)
-                
-                # 格式化结果，避免过长的小数
-                if isinstance(result, float):
-                    # 如果是整数值的浮点数，转换为整数
-                    if result.is_integer():
-                        result = int(result)
-                    else:
-                        # 限制小数位数为6位
-                        result = round(result, 6)
-                
-                self.result_display.setText(str(result))
-            except Exception as e:
-                self.result_display.setText("Error")
-                print(f"计算错误: {e}")
+            self._calculate_result()
         elif value == 'C':
-            # 清除当前输入
             self.result_display.setText("0")
         elif value == '←':
-            # 退格功能
-            current_text = self.result_display.text()
-            if current_text != "0" and current_text != "Error":
-                if len(current_text) == 1:
-                    self.result_display.setText("0")
-                else:
-                    self.result_display.setText(current_text[:-1])
+            self._handle_backspace()
         else:
-            current_text = self.result_display.text()
-            if current_text == "0" or current_text == "Error":
-                self.result_display.setText(value)
+            self._append_to_display(value)
+    
+    def _calculate_result(self):
+        """计算表达式结果"""
+        try:
+            # 安全地计算表达式
+            expression = self.result_display.text()
+            # 替换乘除符号为Python可识别的符号
+            expression = expression.replace('×', '*').replace('÷', '/')
+            result = eval(expression)
+            
+            # 格式化结果，避免过长的小数
+            if isinstance(result, float):
+                # 如果是整数值的浮点数，转换为整数
+                if result.is_integer():
+                    result = int(result)
+                else:
+                    # 限制小数位数为6位
+                    result = round(result, 6)
+            
+            self.result_display.setText(str(result))
+        except Exception as e:
+            self.result_display.setText("Error")
+            print(f"计算错误: {e}")
+            
+    def _handle_backspace(self):
+        """处理退格功能"""
+        current_text = self.result_display.text()
+        if current_text != "0" and current_text != "Error":
+            if len(current_text) == 1:
+                self.result_display.setText("0")
             else:
-                self.result_display.setText(current_text + value)
+                self.result_display.setText(current_text[:-1])
+                
+    def _append_to_display(self, value):
+        """向显示屏添加字符"""
+        current_text = self.result_display.text()
+        if current_text == "0" or current_text == "Error":
+            self.result_display.setText(value)
+        else:
+            self.result_display.setText(current_text + value)
                 
     def back_to_home(self):
         # 获取主应用程序实例并调用返回主页面方法

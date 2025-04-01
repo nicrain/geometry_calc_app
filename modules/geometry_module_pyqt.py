@@ -1,14 +1,14 @@
 import sys
 from pathlib import Path
+
+# 获取项目根目录
+PROJECT_ROOT = Path(__file__).parent.parent.absolute()
+
+# 导入PyQt6模块
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, 
                              QLabel, QFrame, QGraphicsDropShadowEffect, QSizePolicy)
 from PyQt6.QtCore import Qt, QPoint, QRect
 from PyQt6.QtGui import QFont, QPainter, QPen, QColor, QBrush
-
-# 添加项目根目录到Python路径
-project_root = Path(__file__).parent.parent
-if str(project_root) not in sys.path:
-    sys.path.append(str(project_root))
 
 # 导入自定义组件
 from modules.ui_components_pyqt import BaseModule, MetroButton
@@ -53,6 +53,13 @@ class Canvas(QWidget):
         self.show_axes = True  # 是否显示坐标轴
         self.grid_spacing = 50  # 网格间距
         self.axis_color = "#555555"  # 坐标轴颜色
+        
+        # 当前鼠标位置
+        self.current_mouse_x = None
+        self.current_mouse_y = None
+        
+        # 启用鼠标跟踪
+        self.setMouseTracking(True)
     
     def clear(self):
         """清除画布上的所有内容"""
@@ -77,43 +84,53 @@ class Canvas(QWidget):
         # 设置坐标轴样式
         painter.setPen(QPen(QColor(self.axis_color), 1))
         
-        # 绘制X轴
-        painter.drawLine(0, center_y, self.width(), center_y)
-        
-        # 绘制Y轴
-        painter.drawLine(center_x, 0, center_x, self.height())
+        # 绘制X轴和Y轴
+        painter.drawLine(0, center_y, self.width(), center_y)  # X轴
+        painter.drawLine(center_x, 0, center_x, self.height()) # Y轴
         
         # 绘制刻度和标签
         painter.setFont(QFont("Arial", 8))
         
-        # X轴刻度和标签
-        for i in range(-10, 11):
-            x = center_x + i * self.grid_spacing
-            if 0 <= x <= self.width():
-                # 绘制刻度线
-                painter.drawLine(x, center_y - 5, x, center_y + 5)
-                
-                # 绘制标签，但跳过原点(0)
-                if i != 0:
-                    painter.drawText(QRect(x - 10, center_y + 10, 20, 15), 
-                                    Qt.AlignmentFlag.AlignCenter, str(i))
-        
-        # Y轴刻度和标签
-        for i in range(-10, 11):
-            y = center_y + i * self.grid_spacing
-            if 0 <= y <= self.height():
-                # 绘制刻度线
-                painter.drawLine(center_x - 5, y, center_x + 5, y)
-                
-                # 绘制标签，但跳过原点(0)，注意Y轴向下为正，所以标签要取负值
-                if i != 0:
-                    painter.drawText(QRect(center_x + 10, y - 10, 20, 20), 
-                                    Qt.AlignmentFlag.AlignCenter, str(-i))
+        # 绘制X轴和Y轴刻度
+        self._draw_axis_ticks(painter, center_x, center_y, True)  # X轴刻度
+        self._draw_axis_ticks(painter, center_x, center_y, False) # Y轴刻度
         
         # 在原点绘制O标记
         painter.drawText(QRect(center_x + 10, center_y + 10, 15, 15), 
                         Qt.AlignmentFlag.AlignCenter, "O")
+    
+    def _draw_axis_ticks(self, painter, center_x, center_y, is_x_axis):
+        """绘制坐标轴刻度和标签
         
+        Args:
+            painter: QPainter对象
+            center_x: 中心点X坐标
+            center_y: 中心点Y坐标
+            is_x_axis: 是否是X轴
+        """
+        for i in range(-10, 11):
+            if i == 0:  # 跳过原点
+                continue
+                
+            if is_x_axis:
+                # X轴刻度和标签
+                x = center_x + i * self.grid_spacing
+                if 0 <= x <= self.width():
+                    # 绘制刻度线
+                    painter.drawLine(x, center_y - 5, x, center_y + 5)
+                    # 绘制标签
+                    painter.drawText(QRect(x - 10, center_y + 10, 20, 15), 
+                                    Qt.AlignmentFlag.AlignCenter, str(i))
+            else:
+                # Y轴刻度和标签，注意Y轴向下为正，所以标签要取负值
+                y = center_y + i * self.grid_spacing
+                if 0 <= y <= self.height():
+                    # 绘制刻度线
+                    painter.drawLine(center_x - 5, y, center_x + 5, y)
+                    # 绘制标签
+                    painter.drawText(QRect(center_x + 10, y - 10, 20, 20), 
+                                    Qt.AlignmentFlag.AlignCenter, str(-i))
+                                    
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -126,12 +143,27 @@ class Canvas(QWidget):
             self.draw_coordinate_axes(painter)
         
         # 绘制已保存的点
-        for point in self.points:
+        for i, point in enumerate(self.points):
+            # 设置点的颜色
             painter.setPen(QPen(QColor(point['color']), 2))
             painter.setBrush(QBrush(QColor(point['color'])))
             x = int(point['x'])
             y = int(point['y'])
+            
+            # 绘制点
             painter.drawEllipse(x - 5, y - 5, 10, 10)
+            
+            # 绘制点的名称标签 (A, B, C, ...)
+            point_name = 'ABCDEFGHIJKLMN'[i % 14]
+            
+            # 设置标签文本颜色和字体
+            painter.setPen(QPen(QColor("#000000")))
+            font = QFont("Arial", 10)
+            font.setBold(True)
+            painter.setFont(font)
+            
+            # 在点上方绘制标签
+            painter.drawText(x - 5, y - 10, point_name)
         
         # 绘制已保存的线段
         for i, line in enumerate(self.lines):
@@ -184,6 +216,22 @@ class Canvas(QWidget):
                 painter.drawLine(int(self.line_start_point[0]), int(self.line_start_point[1]),
                                 int(self.temp_shape[0]), int(self.temp_shape[1]))
     
+    def mouseMoveEvent(self, event):
+        """鼠标移动事件，用于实时显示坐标"""
+        self.current_mouse_x = event.position().x()
+        self.current_mouse_y = event.position().y()
+        
+        # 如果有父组件的方法来更新鼠标位置信息，则调用它
+        parent = self.parent()
+        while parent:
+            if hasattr(parent, 'update_mouse_position_info'):
+                parent.update_mouse_position_info(self.current_mouse_x, self.current_mouse_y)
+                break
+            parent = parent.parent()
+        
+        # 调用父类的mouseMoveEvent
+        super().mouseMoveEvent(event)
+    
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
             self.start_x = event.position().x()
@@ -196,6 +244,13 @@ class Canvas(QWidget):
                     'y': self.start_y,
                     'color': "#E65100"  # 橙色
                 })
+                # 如果有父组件的方法来更新坐标信息，则调用它
+                parent = self.parent()
+                while parent:
+                    if hasattr(parent, 'update_coordinate_info'):
+                        parent.update_coordinate_info()
+                        break
+                    parent = parent.parent()
                 self.update()
             
             elif self.draw_mode == "line":
@@ -208,7 +263,7 @@ class Canvas(QWidget):
                     x2, y2 = self.start_x, self.start_y
                     
                     # 计算线段长度
-                    length = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+                    length = ((x2 - x1) ** 2 + (y1 - y2) ** 2) ** 0.5
                     length_text = f"{length:.1f}"
                     
                     # 添加线段
@@ -264,9 +319,30 @@ class GeometryModule(BaseModule):
         canvas_layout.setContentsMargins(10, 0, 10, 10)
         content_layout.addWidget(canvas_container)
         
+        # 创建信息显示栏 - 改进GeoGebra风格
+        self.info_panel = QLabel("坐标信息")
+        self.info_panel.setFont(QFont("Arial", 10))
+        self.info_panel.setStyleSheet("""
+            QLabel {
+                background-color: #F8F9FA;
+                color: #212529;
+                border: 1px solid #DEE2E6;
+                border-radius: 3px;
+                padding: 2px 8px;
+            }
+        """)
+        self.info_panel.setMinimumHeight(24)
+        self.info_panel.setMaximumHeight(30)
+        self.info_panel.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        self.info_panel.setTextFormat(Qt.TextFormat.RichText)  # 启用富文本支持
+        canvas_layout.addWidget(self.info_panel)
+        
         # 初始化画布
         self.canvas = Canvas()
         canvas_layout.addWidget(self.canvas)
+        
+        # 连接画布的点更新信号
+        self.canvas.mousePressEvent = self.custom_mouse_press_event
         
         # 初始化按钮引用
         self.circle_button = None
@@ -391,3 +467,80 @@ class GeometryModule(BaseModule):
         self.canvas.show_axes = not self.canvas.show_axes
         self.axes_button.set_active(self.canvas.show_axes)
         self.canvas.update()  # 重绘画布
+    
+    def update_coordinate_info(self):
+        """更新坐标信息显示栏"""
+        if not self.canvas.points:
+            self.info_panel.setText("坐标信息")
+            return
+            
+        # 计算相对于坐标轴的坐标
+        center_x = self.canvas.width() // 2
+        center_y = self.canvas.height() // 2
+        grid_spacing = self.canvas.grid_spacing
+        
+        # 构建点坐标信息 - 更简洁的GeoGebra风格，使用HTML格式化
+        points_info = ""
+        for i, point in enumerate(self.canvas.points):
+            if i > 0:
+                points_info += " | "
+            px = (point['x'] - center_x) / grid_spacing
+            py = (center_y - point['y']) / grid_spacing
+            point_name = 'ABCDEFGHIJKLMN'[i % 14]
+            
+            # 使用HTML格式化点名称，使其更加突出
+            points_info += f"<b style='color:#E65100; font-size:11pt;'>{point_name}</b>({px:.1f}, {py:.1f})"
+            
+        # 更新信息显示栏
+        self.info_panel.setText(points_info)
+        
+    def update_mouse_position_info(self, x, y):
+        """更新鼠标位置坐标信息"""
+        if self.canvas.draw_mode != "point":
+            return
+            
+        # 计算相对于坐标轴的坐标
+        center_x = self.canvas.width() // 2
+        center_y = self.canvas.height() // 2
+        grid_spacing = self.canvas.grid_spacing
+        
+        # 计算实际坐标值（相对于坐标系原点）
+        real_x = (x - center_x) / grid_spacing
+        real_y = (center_y - y) / grid_spacing  # 注意Y轴方向是相反的
+        
+        # 构建鼠标位置信息 - GeoGebra风格简洁显示，使用HTML格式化
+        if not self.canvas.points:
+            # 如果没有点，下一个点是A
+            next_point_name = 'A'
+            mouse_info = f"<b style='color:#3F51B5; font-size:11pt;'>{next_point_name}</b>: <span style='color:#2196F3;'>({real_x:.1f}, {real_y:.1f})</span>"
+        else:
+            # 构建点坐标信息
+            points_info = ""
+            for i, point in enumerate(self.canvas.points):
+                if i > 0:
+                    points_info += " | "
+                px = (point['x'] - center_x) / grid_spacing
+                py = (center_y - point['y']) / grid_spacing
+                point_name = 'ABCDEFGHIJKLMN'[i % 14]
+                
+                # 使用HTML格式化点名称，使其更加突出
+                points_info += f"<b style='color:#E65100; font-size:11pt;'>{point_name}</b>({px:.1f}, {py:.1f})"
+            
+            # 计算下一个点的名称
+            next_point_index = len(self.canvas.points) % 14
+            next_point_name = 'ABCDEFGHIJKLMN'[next_point_index]
+            
+            # 添加鼠标位置，使用不同颜色显示下一个点的名称和坐标
+            mouse_info = f"{points_info} | <b style='color:#3F51B5; font-size:11pt;'>{next_point_name}</b>: <span style='color:#2196F3;'>({real_x:.1f}, {real_y:.1f})</span>"
+        
+        # 更新信息显示栏
+        self.info_panel.setText(mouse_info)
+    
+    def custom_mouse_press_event(self, event):
+        """自定义鼠标点击事件处理函数，用于捕获点的坐标并更新信息显示栏"""
+        # 调用原始的鼠标点击事件处理函数
+        Canvas.mousePressEvent(self.canvas, event)
+        
+        # 更新坐标信息
+        if event.button() == Qt.MouseButton.LeftButton and self.canvas.draw_mode == "point":
+            self.update_coordinate_info()
