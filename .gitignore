@@ -1,2 +1,3 @@
 # 排除 deposer 文件夹
 deposer/
+.venv/
