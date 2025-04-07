@@ -7,7 +7,10 @@
 """
 
 import sys
+import os
+from PyQt6.QtCore import QLibraryInfo, QLibraryInfo
 
+os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = QLibraryInfo.path(QLibraryInfo.LibraryPath.PluginsPath)
 # 导入Qt模块
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                             QGridLayout, QMessageBox)

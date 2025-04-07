@@ -1,3 +1,5 @@
-# 排除 deposer 文件夹
+# Ignore Python bytecode
+__pycache__/
 deposer/
 .venv/
+.DS_Store/
