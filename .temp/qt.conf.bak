@@ -1,7 +1,0 @@
-[Paths]
-Prefix = /Users/z31wang/Documents/MIASHS/Projet/trae/geometry_calc_app/.venv/lib/python3.12/site-packages/PyQt6/Qt6
-Plugins = /Users/z31wang/Documents/MIASHS/Projet/trae/geometry_calc_app/.venv/lib/python3.12/site-packages/PyQt6/Qt6/plugins
-Imports = /Users/z31wang/Documents/MIASHS/Projet/trae/geometry_calc_app/.venv/lib/python3.12/site-packages/PyQt6/Qt6/imports
-Qml2Imports = /Users/z31wang/Documents/MIASHS/Projet/trae/geometry_calc_app/.venv/lib/python3.12/site-packages/PyQt6/Qt6/qml
-Libraries = /Users/z31wang/Documents/MIASHS/Projet/trae/geometry_calc_app/.venv/lib/python3.12/site-packages/PyQt6/Qt6/lib
-Translations = /Users/z31wang/Documents/MIASHS/Projet/trae/geometry_calc_app/.venv/lib/python3.12/site-packages/PyQt6/Qt6/translations
