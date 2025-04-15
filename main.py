@@ -8,18 +8,36 @@
 
 import sys
 import os
-from PyQt6.QtCore import QLibraryInfo, QLibraryInfo
 
-os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = QLibraryInfo.path(QLibraryInfo.LibraryPath.PluginsPath)
-# 导入Qt模块
-from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
-                            QGridLayout, QMessageBox)
-from PyQt6.QtGui import QFont
-
-# 导入UI组件和功能模块
-from modules.ui_components_pyqt import MetroButton
-from modules.geometry_module_pyqt import GeometryModule
-from modules.calculator_module_pyqt import CalculatorModule
+# 安装与导入依赖检查
+try:
+    # 尝试导入核心PyQt6模块
+    from PyQt6.QtCore import QLibraryInfo
+    from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
+                                QGridLayout, QMessageBox)
+    from PyQt6.QtGui import QFont
+    
+    # 设置Qt插件路径 - 确保插件可以被正确加载
+    plugins_path = QLibraryInfo.path(QLibraryInfo.LibraryPath.PluginsPath)
+    os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = plugins_path
+    
+    # 记录环境设置 - 方便调试
+    print(f"Qt插件路径: {plugins_path}")
+    
+    # 导入应用程序自定义模块
+    try:
+        from modules.ui_components_pyqt import MetroButton
+        from modules.geometry_module_pyqt import GeometryModule
+        from modules.calculator_module_pyqt import CalculatorModule
+    except ImportError as e:
+        print(f"错误：无法导入应用程序模块: {e}")
+        print("请确保modules目录存在且包含所需的.py文件")
+        sys.exit(1)
+        
+except ImportError as e:
+    print(f"错误：无法导入PyQt6模块: {e}")
+    print("请安装PyQt6：pip install PyQt6")
+    sys.exit(1)
 
 class MainApp(QMainWindow):
     """主应用程序类，管理应用程序的主界面和模块切换"""
