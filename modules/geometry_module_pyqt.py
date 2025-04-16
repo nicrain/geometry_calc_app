@@ -62,6 +62,9 @@ class Canvas(QWidget):
         
         # 启用鼠标跟踪
         self.setMouseTracking(True)
+        
+        # 三角形绘制相关属性
+        self.triangle_points = []  # 存储三角形的三个点
     
     def clear(self):
         """清除画布上的所有内容"""
@@ -76,6 +79,7 @@ class Canvas(QWidget):
         self.draw_mode = None
         self.line_start_point = None
         self.shapes = []
+        self.triangle_points = []
         self.update()  # 重绘画布
         
     def draw_coordinate_axes(self, painter):
@@ -291,17 +295,33 @@ class Canvas(QWidget):
                 painter.drawText(QRect(int(mid_x - 30), int(mid_y - 10), 60, 20),
                                 Qt.AlignmentFlag.AlignCenter, radius_text)
             
-            elif self.current_shape == "triangle" and self.line_start_point is not None:
-                painter.setPen(QPen(QColor("#311B92"), 2))
-                # 等边三角形
-                x1, y1 = int(self.line_start_point[0]), int(self.line_start_point[1])
-                x2, y2 = int(self.temp_shape[0]), int(self.temp_shape[1])
-                # 计算第三个点，形成等边三角形
-                x3 = int(x1 + (x2 - x1) * 0.5 - (y2 - y1) * 0.866)  # 0.866 = sqrt(3)/2
-                y3 = int(y1 + (y2 - y1) * 0.5 + (x2 - x1) * 0.866)
-                
-                points = [QPoint(x1, y1), QPoint(x2, y2), QPoint(x3, y3)]
-                painter.drawPolygon(points)
+            elif self.current_shape == "triangle":
+                if self.line_start_point is not None:
+                    # 使用虚线绘制三角形预览
+                    dash_pen = QPen(QColor("#311B92"), 2, Qt.PenStyle.DashLine)
+                    painter.setPen(dash_pen)
+                    painter.setBrush(Qt.BrushStyle.NoBrush)
+                    
+                    # 获取起点
+                    x1, y1 = self.line_start_point
+                    
+                    # 如果有第二个点(存储在triangle_points中)
+                    if len(self.triangle_points) == 1:
+                        x2, y2 = self.triangle_points[0]
+                        
+                        # 绘制第一条线段(从第一个点到第二个点)
+                        # painter.drawLine(int(x1), int(y1), int(x2), int(y2))
+                        
+                        # 如果有临时点(鼠标位置)，绘制与第二个点和第一个点的连线
+                        if self.temp_shape:
+                            x3, y3 = self.temp_shape
+                            painter.drawLine(int(x2), int(y2), int(x3), int(y3))
+                            painter.drawLine(int(x3), int(y3), int(x1), int(y1))
+                    else:
+                        # 第一阶段：只有第一个点，绘制到鼠标位置的临时线
+                        if self.temp_shape:
+                            x2, y2 = self.temp_shape
+                            painter.drawLine(int(x1), int(y1), int(x2), int(y2))
             
             elif self.draw_mode == "line" and self.line_start_point:
                 painter.setPen(QPen(QColor("#0277BD"), 2))
@@ -368,6 +388,36 @@ class Canvas(QWidget):
             while parent:
                 if hasattr(parent, 'update_circle_info'):
                     parent.update_circle_info(x1, y1, radius)
+                    break
+                parent = parent.parent()
+        
+        # 如果在三角形绘制模式下且已有起点，则更新临时线段或三角形
+        elif self.current_shape == "triangle" and self.line_start_point is not None:
+            self.temp_shape = (self.current_mouse_x, self.current_mouse_y)
+            self.update()  # 重绘画布以显示临时线段或三角形
+            
+            # 根据三角形绘制的阶段更新信息
+            parent = self.parent()
+            while parent:
+                if hasattr(parent, 'update_triangle_info'):
+                    x1, y1 = self.line_start_point
+                    
+                    if len(self.triangle_points) == 0:
+                        # 绘制第一条边
+                        x2, y2 = self.current_mouse_x, self.current_mouse_y
+                        length = ((x2 - x1) ** 2 + (y1 - y2) ** 2) ** 0.5
+                        parent.update_triangle_info(1, x1, y1, x2, y2, length)
+                    else:
+                        # 绘制完整三角形
+                        x2, y2 = self.triangle_points[0]
+                        x3, y3 = self.current_mouse_x, self.current_mouse_y
+                        
+                        # 计算三条边的长度
+                        side1 = ((x2 - x1)**2 + (y2 - y1)**2)**0.5
+                        side2 = ((x3 - x2)**2 + (y3 - y2)**2)**0.5
+                        side3 = ((x1 - x3)**2 + (y1 - y3)**2)**0.5
+                        
+                        parent.update_triangle_info(2, x1, y1, x2, y2, x3, y3, [side1, side2, side3], None)
                     break
                 parent = parent.parent()
         
@@ -626,6 +676,135 @@ class Canvas(QWidget):
                     parent = self.parent()
                     while parent:
                         if hasattr(parent, 'update_coordinate_info'):
+                            parent.update_coordinate_info()
+                            break
+                        parent = parent.parent()
+                    self.update()
+            
+            # 在三角形绘制模式下
+            elif self.current_shape == "triangle":
+                if self.line_start_point is None:
+                    # 设置第一个点
+                    self.line_start_point = (self.start_x, self.start_y)
+                    self.triangle_points = []  # 清空已有的三角形点
+                    
+                    # 添加第一个点
+                    self.points.append({
+                        'x': self.start_x,
+                        'y': self.start_y,
+                        'color': "#311B92"  # 深紫色
+                    })
+                    
+                    # 重置临时形状
+                    self.temp_shape = None
+                    
+                    # 更新坐标信息
+                    parent = self.parent()
+                    while parent:
+                        if hasattr(parent, 'update_coordinate_info'):
+                            parent.update_coordinate_info()
+                            break
+                        parent = parent.parent()
+                    self.update()
+                elif len(self.triangle_points) == 0:
+                    # 添加第二个点
+                    self.triangle_points.append((self.start_x, self.start_y))
+                    
+                    # 添加为画布上的点
+                    self.points.append({
+                        'x': self.start_x,
+                        'y': self.start_y,
+                        'color': "#311B92"  # 深紫色
+                    })
+                    
+                    # 创建从第一个点到第二个点的实线
+                    x1, y1 = self.line_start_point
+                    x2, y2 = self.start_x, self.start_y
+                    
+                    # 添加第一条边作为实线
+                    self.lines.append({
+                        'x1': x1, 
+                        'y1': y1, 
+                        'x2': x2, 
+                        'y2': y2, 
+                        'color': "#311B92"  # 深紫色
+                    })
+                
+                    # 设置临时形状为鼠标位置
+                    self.temp_shape = (self.start_x, self.start_y)
+
+                    # 更新坐标信息
+                    parent = self.parent()
+                    while parent:
+                        if hasattr(parent, 'update_coordinate_info'):
+                            parent.update_coordinate_info()
+                            break
+                        parent = parent.parent()
+
+                    self.update()
+                else:
+                    # 添加第三个点，完成三角形
+                    x3, y3 = self.start_x, self.start_y
+                    x1, y1 = self.line_start_point
+                    x2, y2 = self.triangle_points[0]
+                    
+                    # 添加第三个点
+                    self.points.append({
+                        'x': x3,
+                        'y': y3,
+                        'color': "#311B92"  # 深紫色
+                    })
+                    
+                    # 添加三条边作为线段
+                    self.lines.append({'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2, 'color': "#311B92"})
+                    self.lines.append({'x1': x2, 'y1': y2, 'x2': x3, 'y2': y3, 'color': "#311B92"})
+                    self.lines.append({'x1': x3, 'y1': y3, 'x2': x1, 'y2': y1, 'color': "#311B92"})
+                    
+                    # 计算每条边的长度
+                    side1 = ((x2 - x1)**2 + (y2 - y1)**2)**0.5
+                    side2 = ((x3 - x2)**2 + (y3 - y2)**2)**0.5
+                    side3 = ((x1 - x3)**2 + (y1 - y3)**2)**0.5
+                    
+                    # 转换为相对坐标系的长度
+                    real_side1 = side1 / self.grid_spacing if self.grid_spacing else side1
+                    real_side2 = side2 / self.grid_spacing if self.grid_spacing else side2
+                    real_side3 = side3 / self.grid_spacing if self.grid_spacing else side3
+                    
+                    # 添加边长文本
+                    self.line_texts.append(f"{real_side1:.1f}")
+                    self.line_texts.append(f"{real_side2:.1f}")
+                    self.line_texts.append(f"{real_side3:.1f}")
+                    
+                    # 计算三角形周长
+                    perimeter = side1 + side2 + side3
+                    real_perimeter = perimeter / self.grid_spacing if self.grid_spacing else perimeter
+                    
+                    # 存储到形状属性中
+                    self.shapes.append({
+                        'type': 'triangle',
+                        'vertices': [(x1, y1), (x2, y2), (x3, y3)],
+                        'sides': [side1, side2, side3],
+                        'area': None,
+                        'perimeter': perimeter,
+                        'color': "#311B92"
+                    })
+                    
+                    # 重置临时状态
+                    self.line_start_point = None
+                    self.temp_shape = None
+                    self.triangle_points = []
+                    
+                    # 更新三角形信息
+                    parent = self.parent()
+                    while parent:
+                        if hasattr(parent, 'update_triangle_info_complete'):
+                            parent.update_triangle_info_complete(
+                                [real_side1, real_side2, real_side3], 
+                                None, 
+                                real_perimeter
+                            )
+                            break
+                        elif hasattr(parent, 'update_coordinate_info'):
                             parent.update_coordinate_info()
                             break
                         parent = parent.parent()
@@ -1116,6 +1295,12 @@ class GeometryModule(BaseModule):
             self.shape_props_button.hide()
             self.square_properties_panel.hide()
             self.circle_properties_panel.hide()
+            
+            # 重置三角形绘制状态
+            self.canvas.triangle_points = []
+            
+            # 显示三角形绘制说明
+            self.info_panel.setText("<b>Triangle:</b> Cliquez sur trois points pour dessiner un triangle")
     
     def back_to_home(self):
         # 获取主应用程序实例并调用返回主页面方法
@@ -1388,6 +1573,64 @@ class GeometryModule(BaseModule):
         
         # 更新信息显示栏
         self.info_panel.setText(circle_info)
+    
+    def update_triangle_info(self, stage, *args):
+        """更新三角形信息，根据绘制阶段显示不同信息"""
+        if stage == 1:
+            # 第一阶段：绘制第一条边
+            x1, y1, x2, y2, length = args
+            
+            # 计算相对于坐标轴的坐标
+            center_x = self.canvas.width() // 2
+            center_y = self.canvas.height() // 2
+            grid_spacing = self.canvas.grid_spacing
+            
+            # 计算实际坐标值
+            real_x1 = (x1 - center_x) / grid_spacing
+            real_y1 = (center_y - y1) / grid_spacing
+            real_x2 = (x2 - center_x) / grid_spacing
+            real_y2 = (center_y - y2) / grid_spacing
+            
+            # 计算实际长度
+            real_length = length / grid_spacing
+            
+            # 构建信息
+            triangle_info = f"<span style='background-color:#EDE7F6; border:1px solid #D1C4E9; border-radius:3px; padding:1px 4px; margin-right:5px;'>"
+            triangle_info += f"<b style='color:#311B92; font-size:11pt;'>Triangle</b></span> "
+            triangle_info += f"Premier point: ({real_x1:.2f}, {real_y1:.2f}) | "
+            triangle_info += f"Deuxième point: ({real_x2:.2f}, {real_y2:.2f}) | "
+            triangle_info += f"Côté: {real_length:.2f}"
+            
+            self.info_panel.setText(triangle_info)
+        
+        elif stage == 2:
+            # 第二阶段：绘制完整三角形
+            x1, y1, x2, y2, x3, y3, sides, _ = args
+            
+            # 计算相对于坐标轴的坐标
+            center_x = self.canvas.width() // 2
+            center_y = self.canvas.height() // 2
+            grid_spacing = self.canvas.grid_spacing
+            
+            # 计算实际边长
+            real_sides = [side / grid_spacing for side in sides]
+            
+            # 构建信息 - 移除面积显示
+            triangle_info = f"<span style='background-color:#EDE7F6; border:1px solid #D1C4E9; border-radius:3px; padding:1px 4px; margin-right:5px;'>"
+            triangle_info += f"<b style='color:#311B92; font-size:11pt;'>Triangle</b></span> "
+            triangle_info += f"Côtés: {real_sides[0]:.2f}, {real_sides[1]:.2f}, {real_sides[2]:.2f} | "
+            triangle_info += f"Périmètre: {sum(real_sides):.2f}"
+            
+            self.info_panel.setText(triangle_info)
+    
+    def update_triangle_info_complete(self, sides, _, perimeter):
+        """三角形绘制完成后，显示三角形的特性"""
+        triangle_info = f"<span style='background-color:#EDE7F6; border:1px solid #D1C4E9; border-radius:3px; padding:1px 4px; margin-right:5px;'>"
+        triangle_info += f"<b style='color:#311B92; font-size:11pt;'>Triangle</b></span> "
+        triangle_info += f"Côtés: {sides[0]:.2f}, {sides[1]:.2f}, {sides[2]:.2f} | "
+        triangle_info += f"Périmètre: {perimeter:.2f}"
+        
+        self.info_panel.setText(triangle_info)
     
     def custom_mouse_press_event(self, event):
         """自定义鼠标点击事件处理函数，用于捕获点的坐标并更新信息显示栏"""
