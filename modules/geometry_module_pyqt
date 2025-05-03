@@ -882,7 +882,23 @@ class SimpleSquarePropertiesPanel(QFrame):
         # 创建按钮
         buttons_layout = QHBoxLayout()
         
-        # 创建按钮 - 移除应用按钮，只保留创建按钮
+        # 应用按钮
+        self.apply_button = QPushButton("Appliquer")
+        self.apply_button.setStyleSheet("""
+            QPushButton {
+                background-color: #1B5E20; 
+                color: white; 
+                border-radius: 4px; 
+                padding: 5px 10px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #2E7D32;
+            }
+        """)
+        buttons_layout.addWidget(self.apply_button)
+        
+        # 创建按钮
         self.create_button = QPushButton("Créer")
         self.create_button.setStyleSheet("""
             QPushButton {
@@ -927,6 +943,7 @@ class SimpleSquarePropertiesPanel(QFrame):
         self.side_length_spin.setEnabled(enabled)
         self.x_spin.setEnabled(enabled)
         self.y_spin.setEnabled(enabled)
+        self.apply_button.setEnabled(enabled)
         self.create_button.setEnabled(enabled)
         
         # 根据状态修改样式
@@ -1032,7 +1049,23 @@ class SimpleCirclePropertiesPanel(QFrame):
         # 创建按钮
         buttons_layout = QHBoxLayout()
         
-        # 创建按钮 - 移除应用按钮，只保留创建按钮
+        # 应用按钮
+        self.apply_button = QPushButton("Appliquer")
+        self.apply_button.setStyleSheet("""
+            QPushButton {
+                background-color: #1B5E20; 
+                color: white; 
+                border-radius: 4px; 
+                padding: 5px 10px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #2E7D32;
+            }
+        """)
+        buttons_layout.addWidget(self.apply_button)
+        
+        # 创建按钮
         self.create_button = QPushButton("Créer")
         self.create_button.setStyleSheet("""
             QPushButton {
@@ -1077,6 +1110,7 @@ class SimpleCirclePropertiesPanel(QFrame):
         self.radius_spin.setEnabled(enabled)
         self.x_spin.setEnabled(enabled)
         self.y_spin.setEnabled(enabled)
+        self.apply_button.setEnabled(enabled)
         self.create_button.setEnabled(enabled)
         
         # 根据状态修改样式
@@ -1200,10 +1234,12 @@ class GeometryModule(BaseModule):
         # 创建工具栏
         self.create_geometry_tools(tools_frame)
         
-        # 连接按钮信号 - 移除对应用按钮的引用
+        # 连接按钮信号
+        self.square_properties_panel.apply_button.clicked.connect(self._apply_square_properties)
         self.square_properties_panel.create_button.clicked.connect(self._create_square_from_properties)
         
-        # 连接圆形属性面板按钮信号 - 移除对应用按钮的引用
+        # 连接圆形属性面板按钮信号
+        self.circle_properties_panel.apply_button.clicked.connect(self._apply_circle_properties)
         self.circle_properties_panel.create_button.clicked.connect(self._create_circle_from_properties)
         
         # 属性面板是否启用的状态标记
@@ -1252,8 +1288,8 @@ class GeometryModule(BaseModule):
         self.triangle_button.clicked.connect(lambda: self.select_shape("triangle"))
         self.tools_layout.addWidget(self.triangle_button, 2, 1)
         
-        # 添加形状属性按钮
-        self.shape_props_button = MetroButton("Propriétés", "#030d03", "#FFFFFF")
+        # 添加属性启用/禁用按钮
+        self.shape_props_button = MetroButton("Activer Propriétés", "#030d03", "#FFFFFF")
         self.shape_props_button.setMinimumSize(220, 40)  # 增加宽度，确保按钮足够大
         self.shape_props_button.setFont(QFont("Arial", 10))
         self.shape_props_button.clicked.connect(self._toggle_shape_properties)
@@ -1263,7 +1299,7 @@ class GeometryModule(BaseModule):
         # 保留原属性按钮的引用以保持向后兼容
         self.square_props_button = self.shape_props_button
         
-        # 将属性面板添加到布局中但默认隐藏 - 修改这部分代码
+        # 将属性面板添加到布局中但默认隐藏
         self.tools_layout.addWidget(self.circle_properties_panel, 4, 0, 1, 2)
         self.tools_layout.addWidget(self.square_properties_panel, 5, 0, 1, 2)
         
@@ -1329,18 +1365,14 @@ class GeometryModule(BaseModule):
         # 设置当前按钮状态
         if shape == "square":
             self.square_button.set_active(True)
-            # 直接显示属性面板，但保持禁用状态
+            # 显示属性面板但保持禁用状态
             self.square_properties_panel.set_enabled(False)
             self.square_properties_panel.show()
-            self.shape_props_button.show()
-            self.shape_props_button.setText("Activer Propriétés")
         elif shape == "circle":
             self.circle_button.set_active(True)
-            # 直接显示属性面板，但保持禁用状态
+            # 显示属性面板但保持禁用状态
             self.circle_properties_panel.set_enabled(False)
             self.circle_properties_panel.show()
-            self.shape_props_button.show()
-            self.shape_props_button.setText("Activer Propriétés")
         elif shape == "triangle":
             self.triangle_button.set_active(True)
             # 重置三角形绘制状态
@@ -1689,8 +1721,11 @@ class GeometryModule(BaseModule):
             self.update_coordinate_info()
     
     def _apply_square_properties(self):
-        """应用属性面板中的设置到选中的正方形 (为向后兼容保留)"""
+        """应用属性面板中的设置到选中的正方形"""
         properties = self.square_properties_panel.get_properties()
+        # 如果有选中的正方形，更新它的属性
+        # 此处可以添加选中图形的逻辑
+        
         # 更新信息面板
         self.update_square_info_complete(properties['side'], properties['side']**2)
 
@@ -1738,8 +1773,11 @@ class GeometryModule(BaseModule):
         self.update_square_info_complete(properties['side'], properties['side']**2)
     
     def _apply_circle_properties(self):
-        """应用属性面板中的设置到选中的圆形 (为向后兼容保留)"""
+        """应用属性面板中的设置到选中的圆形"""
         properties = self.circle_properties_panel.get_properties()
+        # 如果有选中的圆形，更新它的属性
+        # 此处可以添加选中图形的逻辑
+        
         # 更新信息面板
         radius = properties['radius']
         area = math.pi * (radius ** 2)
@@ -1796,20 +1834,8 @@ class GeometryModule(BaseModule):
         
         if current_shape == "square":
             self.square_properties_panel.set_enabled(self.properties_enabled)
-            if self.properties_enabled:
-                self.square_properties_panel.show()
-                self.shape_props_button.setText("Désactiver Propriétés")
-            else:
-                self.square_properties_panel.hide()
-                self.shape_props_button.setText("Activer Propriétés")
         elif current_shape == "circle":
             self.circle_properties_panel.set_enabled(self.properties_enabled)
-            if self.properties_enabled:
-                self.circle_properties_panel.show()
-                self.shape_props_button.setText("Désactiver Propriétés")
-            else:
-                self.circle_properties_panel.hide()
-                self.shape_props_button.setText("Activer Propriétés")
     
     # 为向后兼容保留原方法
     def _toggle_square_properties(self):
