@@ -904,6 +904,11 @@ class SimpleSquarePropertiesPanel(QFrame):
         # 设置尺寸策略
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.setFixedWidth(220)
+        
+        # 添加值变化信号，供外部连接
+        self.side_length_spin.valueChanged.connect(self._property_changed)
+        self.x_spin.valueChanged.connect(self._property_changed)
+        self.y_spin.valueChanged.connect(self._property_changed)
     
     def get_properties(self):
         """获取当前设置的属性"""
@@ -959,6 +964,10 @@ class SimpleSquarePropertiesPanel(QFrame):
                     border: 1px solid #CFD8DC;
                 }
             """)
+    
+    def _property_changed(self):
+        """属性值变化时发送信号"""
+        pass
 
 class SimpleCirclePropertiesPanel(QFrame):
     """简化的圆形属性面板，提供半径和位置设置"""
@@ -1054,6 +1063,11 @@ class SimpleCirclePropertiesPanel(QFrame):
         # 设置尺寸策略
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.setFixedWidth(220)
+        
+        # 添加值变化信号，供外部连接
+        self.radius_spin.valueChanged.connect(self._property_changed)
+        self.x_spin.valueChanged.connect(self._property_changed)
+        self.y_spin.valueChanged.connect(self._property_changed)
     
     def get_properties(self):
         """获取当前设置的属性"""
@@ -1109,6 +1123,10 @@ class SimpleCirclePropertiesPanel(QFrame):
                     border: 1px solid #CFD8DC;
                 }
             """)
+    
+    def _property_changed(self):
+        """属性值变化时发送信号"""
+        pass
 
 class GeometryModule(BaseModule):
     def __init__(self, parent=None):
@@ -1208,6 +1226,9 @@ class GeometryModule(BaseModule):
         
         # 属性面板是否启用的状态标记
         self.properties_enabled = False
+        
+        # 添加预览相关的属性
+        self.preview_shape = None
     
     def create_geometry_tools(self, tools_frame):
         # 添加返回主界面按钮
@@ -1796,18 +1817,109 @@ class GeometryModule(BaseModule):
         
         if current_shape == "square":
             self.square_properties_panel.set_enabled(self.properties_enabled)
-            # 不再隐藏面板，只改变按钮文本
+            # 更新按钮文本
             if self.properties_enabled:
                 self.shape_props_button.setText("Désactiver Propriétés")
+                # 连接属性变化信号
+                self.square_properties_panel._property_changed = self._preview_square_from_properties
+                # 初始预览
+                self._preview_square_from_properties()
             else:
                 self.shape_props_button.setText("Activer Propriétés")
+                # 断开属性变化信号
+                self.square_properties_panel._property_changed = lambda: None
+                # 清除预览
+                self.canvas.temp_shape = None
+                self.canvas.update()
         elif current_shape == "circle":
             self.circle_properties_panel.set_enabled(self.properties_enabled)
-            # 不再隐藏面板，只改变按钮文本
+            # 更新按钮文本
             if self.properties_enabled:
                 self.shape_props_button.setText("Désactiver Propriétés")
+                # 连接属性变化信号
+                self.circle_properties_panel._property_changed = self._preview_circle_from_properties
+                # 初始预览
+                self._preview_circle_from_properties()
             else:
                 self.shape_props_button.setText("Activer Propriétés")
+                # 断开属性变化信号
+                self.circle_properties_panel._property_changed = lambda: None
+                # 清除预览
+                self.canvas.temp_shape = None
+                self.canvas.update()
+    
+    def _preview_square_from_properties(self):
+        """根据属性面板中的设置预览正方形"""
+        if not self.properties_enabled:
+            return
+            
+        properties = self.square_properties_panel.get_properties()
+        
+        # 计算坐标系中的实际位置
+        center_x = self.canvas.width() // 2
+        center_y = self.canvas.height() // 2
+        grid_spacing = self.canvas.grid_spacing or 1
+        
+        x = center_x + properties['x'] * grid_spacing
+        y = center_y - properties['y'] * grid_spacing  # 反转Y轴，符合数学坐标系
+        
+        # 计算正方形顶点
+        side_px = properties['side'] * grid_spacing
+        half_side = side_px / 2
+        
+        # 存储预览信息
+        self.preview_shape = {
+            'type': 'square',
+            'x': x,
+            'y': y,
+            'side': side_px
+        }
+        
+        # 在画布上显示预览，通过设置临时状态
+        self.canvas.current_shape = "square"
+        self.canvas.line_start_point = (x - half_side, y - half_side)  # 左上角
+        self.canvas.temp_shape = (x + half_side, y + half_side)  # 右下角
+        
+        # 更新画布和信息面板
+        self.canvas.update()
+        self.update_square_info_complete(properties['side'], properties['side']**2)
+    
+    def _preview_circle_from_properties(self):
+        """根据属性面板中的设置预览圆形"""
+        if not self.properties_enabled:
+            return
+            
+        properties = self.circle_properties_panel.get_properties()
+        
+        # 计算坐标系中的实际位置
+        center_x = self.canvas.width() // 2
+        center_y = self.canvas.height() // 2
+        grid_spacing = self.canvas.grid_spacing or 1
+        
+        x = center_x + properties['x'] * grid_spacing
+        y = center_y - properties['y'] * grid_spacing  # 反转Y轴，符合数学坐标系
+        
+        # 计算圆形半径
+        radius_px = properties['radius'] * grid_spacing
+        
+        # 存储预览信息
+        self.preview_shape = {
+            'type': 'circle',
+            'x': x,
+            'y': y,
+            'radius': radius_px
+        }
+        
+        # 在画布上显示预览，通过设置临时状态
+        self.canvas.current_shape = "circle"
+        self.canvas.line_start_point = (x, y)  # 圆心
+        self.canvas.temp_shape = (x + radius_px, y)  # 圆上一点
+        
+        # 更新画布和信息面板
+        self.canvas.update()
+        real_radius = properties['radius']
+        real_area = math.pi * (real_radius ** 2)
+        self.update_circle_info_complete(real_radius, real_area)
     
     # 为向后兼容保留原方法
     def _toggle_square_properties(self):
