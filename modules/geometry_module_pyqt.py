@@ -1329,14 +1329,14 @@ class GeometryModule(BaseModule):
         # 设置当前按钮状态
         if shape == "square":
             self.square_button.set_active(True)
-            # 直接显示属性面板，但保持禁用状态
+            # 显示属性面板，但保持禁用状态
             self.square_properties_panel.set_enabled(False)
             self.square_properties_panel.show()
             self.shape_props_button.show()
             self.shape_props_button.setText("Activer Propriétés")
         elif shape == "circle":
             self.circle_button.set_active(True)
-            # 直接显示属性面板，但保持禁用状态
+            # 显示属性面板，但保持禁用状态
             self.circle_properties_panel.set_enabled(False)
             self.circle_properties_panel.show()
             self.shape_props_button.show()
@@ -1796,19 +1796,17 @@ class GeometryModule(BaseModule):
         
         if current_shape == "square":
             self.square_properties_panel.set_enabled(self.properties_enabled)
+            # 不再隐藏面板，只改变按钮文本
             if self.properties_enabled:
-                self.square_properties_panel.show()
                 self.shape_props_button.setText("Désactiver Propriétés")
             else:
-                self.square_properties_panel.hide()
                 self.shape_props_button.setText("Activer Propriétés")
         elif current_shape == "circle":
             self.circle_properties_panel.set_enabled(self.properties_enabled)
+            # 不再隐藏面板，只改变按钮文本
             if self.properties_enabled:
-                self.circle_properties_panel.show()
                 self.shape_props_button.setText("Désactiver Propriétés")
             else:
-                self.circle_properties_panel.hide()
                 self.shape_props_button.setText("Activer Propriétés")
     
     # 为向后兼容保留原方法
