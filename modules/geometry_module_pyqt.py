@@ -334,7 +334,20 @@ class Canvas(QWidget):
                 painter.setPen(QPen(QColor("#0277BD"), 2))
                 painter.drawLine(int(self.line_start_point[0]), int(self.line_start_point[1]),
                                 int(self.temp_shape[0]), int(self.temp_shape[1]))
-    
+        
+        # 绘制临时点
+        if hasattr(self, 'temp_point') and self.temp_point:
+            painter.setPen(QPen(QColor("#E65100"), 2))
+            painter.setBrush(QBrush(QColor("#E65100")))
+            x, y = self.temp_point
+            painter.drawEllipse(int(x) - 5, int(y) - 5, 10, 10)
+            point_name = 'ABCDEFGHIJKLMN'[len(self.points) % 14]
+            painter.setPen(QPen(QColor("#000000")))
+            font = QFont("Arial", 10)
+            font.setBold(True)
+            painter.setFont(font)
+            painter.drawText(int(x) - 5, int(y) - 10, point_name)
+
     def mouseMoveEvent(self, event):
         """鼠标移动事件，用于实时显示坐标和临时线段"""
         self.current_mouse_x = event.position().x()
@@ -822,6 +835,160 @@ class Canvas(QWidget):
                         parent = parent.parent()
                     self.update()
 
+class SimplePointPropertiesPanel(QFrame):
+    """简化的点属性面板，提供X和Y坐标设置"""
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFrameShape(QFrame.Shape.StyledPanel)
+        self.setFrameShadow(QFrame.Shadow.Raised)
+        self.setStyleSheet("""
+            QFrame {
+                background-color: #FBE9E7;
+                border-radius: 8px;
+                border: 1px solid #FFCCBC;
+            }
+            QLabel {
+                color: #E65100;
+                font-weight: bold;
+            }
+        """)
+        
+        # 设置阴影效果
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(10)
+        shadow.setColor(QColor("#CCCCCC"))
+        shadow.setOffset(2, 2)
+        self.setGraphicsEffect(shadow)
+        
+        # 设置布局
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(8)
+        
+        # 标题
+        title_label = QLabel("Propriétés du Point", self)
+        title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #E65100;")
+        layout.addWidget(title_label)
+        
+        # 创建属性设置网格
+        properties_layout = QGridLayout()
+        properties_layout.setVerticalSpacing(10)
+        properties_layout.setHorizontalSpacing(8)
+        
+        # X坐标
+        properties_layout.addWidget(QLabel("X:"), 0, 0)
+        self.x_spin = QDoubleSpinBox()
+        self.x_spin.setRange(-50.0, 50.0)
+        self.x_spin.setSingleStep(0.5)
+        self.x_spin.setValue(0.0)
+        properties_layout.addWidget(self.x_spin, 0, 1)
+        
+        # Y坐标
+        properties_layout.addWidget(QLabel("Y:"), 1, 0)
+        self.y_spin = QDoubleSpinBox()
+        self.y_spin.setRange(-50.0, 50.0)
+        self.y_spin.setSingleStep(0.5)
+        self.y_spin.setValue(0.0)
+        properties_layout.addWidget(self.y_spin, 1, 1)
+        
+        layout.addLayout(properties_layout)
+        
+        # 创建按钮
+        buttons_layout = QHBoxLayout()
+        
+        # 创建按钮
+        self.create_button = QPushButton("Créer")
+        self.create_button.setStyleSheet("""
+            QPushButton {
+                background-color: #E65100; 
+                color: white; 
+                border-radius: 4px; 
+                padding: 5px 10px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #EF6C00;
+            }
+        """)
+        buttons_layout.addWidget(self.create_button)
+        
+        layout.addLayout(buttons_layout)
+        layout.addStretch()
+        
+        # 设置尺寸策略
+        self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self.setFixedWidth(220)
+        
+        # 添加值变化信号，供外部连接
+        self.x_spin.valueChanged.connect(self._property_changed)
+        self.y_spin.valueChanged.connect(self._property_changed)
+    
+    def get_properties(self):
+        """获取当前设置的属性"""
+        return {
+            'x': self.x_spin.value(),
+            'y': self.y_spin.value()
+        }
+    
+    def set_properties(self, properties):
+        """设置面板属性值"""
+        if 'x' in properties:
+            self.x_spin.setValue(properties['x'])
+        if 'y' in properties:
+            self.y_spin.setValue(properties['y'])
+    
+    def set_enabled(self, enabled=True):
+        """设置面板输入控件的启用/禁用状态"""
+        self.x_spin.setEnabled(enabled)
+        self.y_spin.setEnabled(enabled)
+        self.create_button.setEnabled(enabled)
+        
+        # 根据状态修改样式
+        if enabled:
+            self.setStyleSheet("""
+                QFrame {
+                    background-color: #FBE9E7;
+                    border-radius: 8px;
+                    border: 1px solid #FFCCBC;
+                }
+                QLabel {
+                    color: #E65100;
+                    font-weight: bold;
+                }
+            """)
+        else:
+            self.setStyleSheet("""
+                QFrame {
+                    background-color: #ECEFF1;
+                    border-radius: 8px;
+                    border: 1px solid #CFD8DC;
+                }
+                QLabel {
+                    color: #607D8B;
+                    font-weight: bold;
+                }
+                QDoubleSpinBox, QPushButton {
+                    background-color: #ECEFF1;
+                    color: #90A4AE;
+                    border: 1px solid #CFD8DC;
+                }
+            """)
+    
+    def _property_changed(self):
+        """属性值变化时发送信号，用于实时预览"""
+        # 获取当前属性值
+        properties = self.get_properties()
+        
+        # 发送信号给父组件
+        parent = self.parent()
+        while parent:
+            if hasattr(parent, '_preview_point_from_properties'):
+                parent._preview_point_from_properties()
+                break
+            parent = parent.parent()
+
 class SimpleRectanglePropertiesPanel(QFrame):
     """简化的矩形属性面板，提供长度、宽度和位置设置"""
     
@@ -1259,11 +1426,18 @@ class GeometryModule(BaseModule):
         self.rectangle_properties_panel.set_enabled(False)  # 默认禁用
         self.rectangle_properties_panel.hide()  # 默认隐藏
         
+        # 添加点属性面板
+        self.point_properties_panel = SimplePointPropertiesPanel()
+        self.point_properties_panel.set_enabled(False)  # 默认禁用
+        self.point_properties_panel.hide()  # 默认隐藏
+        
         # 创建工具栏
         self.create_geometry_tools(tools_frame)
         
         # 连接按钮信号 - 移除对应用按钮的引用
         self.rectangle_properties_panel.create_button.clicked.connect(self._create_rectangle_from_properties)  # 改为矩形
+        # 连接点属性面板的创建按钮信号
+        self.point_properties_panel.create_button.clicked.connect(self._create_point_from_properties)
         
         # 属性面板是否启用的状态标记
         self.properties_enabled = False
@@ -1328,11 +1502,12 @@ class GeometryModule(BaseModule):
         # 将属性面板添加到布局中但默认隐藏 - 修改这部分代码
         self.tools_layout.addWidget(self.circle_properties_panel, 4, 0, 1, 2)
         self.tools_layout.addWidget(self.rectangle_properties_panel, 5, 0, 1, 2)  # 改为矩形属性面板
+        self.tools_layout.addWidget(self.point_properties_panel, 6, 0, 1, 2)  # 添加点属性面板
         
         # 添加弹性空间 - 确保清除和坐标轴按钮在底部
         spacer = QWidget()
         spacer.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        self.tools_layout.addWidget(spacer, 6, 0, 1, 2)  # 修改为跨两列
+        self.tools_layout.addWidget(spacer, 7, 0, 1, 2)  # 修改为跨两列
         
         # 将清除和坐标轴按钮移到最下面
         # 添加清除按钮
@@ -1340,7 +1515,7 @@ class GeometryModule(BaseModule):
         clear_button.setMinimumSize(110, 110)
         clear_button.setFont(QFont("Arial", 12, weight=QFont.Weight.Bold))
         clear_button.clicked.connect(self.canvas.clear)
-        self.tools_layout.addWidget(clear_button, 7, 0)
+        self.tools_layout.addWidget(clear_button, 8, 0)
         
         # 添加坐标轴切换按钮
         self.axes_button = MetroButton("Axes", "#607D8B", "#FFFFFF")
@@ -1348,7 +1523,7 @@ class GeometryModule(BaseModule):
         self.axes_button.setFont(QFont("Arial", 12, weight=QFont.Weight.Bold))
         self.axes_button.clicked.connect(self.toggle_axes)
         self.axes_button.set_active(self.canvas.show_axes)  # 根据当前状态设置按钮状态
-        self.tools_layout.addWidget(self.axes_button, 7, 1)
+        self.tools_layout.addWidget(self.axes_button, 8, 1)
     
     def select_draw_mode(self, mode):
         self.canvas.draw_mode = mode
@@ -1363,11 +1538,20 @@ class GeometryModule(BaseModule):
         # 设置当前按钮状态
         if mode == "point":
             self.point_button.set_active(True)
+            # 显示点属性面板，但保持禁用状态
+            self.point_properties_panel.set_enabled(False)
+            self.point_properties_panel.show()
+            self.shape_props_button.show()
+            self.shape_props_button.setText("Activer Propriétés")
         elif mode == "line":
             self.line_button.set_active(True)
             
         # 隐藏所有属性面板和属性按钮
-        self.shape_props_button.hide()
+        if mode != "point":
+            self.shape_props_button.hide()
+            self.point_properties_panel.hide()
+        
+        # 隐藏圆形和矩形属性面板
         self.rectangle_properties_panel.hide()
         self.circle_properties_panel.hide()
     
@@ -1387,6 +1571,7 @@ class GeometryModule(BaseModule):
         self.shape_props_button.hide()
         self.rectangle_properties_panel.hide()
         self.circle_properties_panel.hide()
+        self.point_properties_panel.hide()  # 隐藏点属性面板
         self.properties_enabled = False
         
         # 设置当前按钮状态
@@ -1824,6 +2009,7 @@ class GeometryModule(BaseModule):
         """切换属性面板的启用/禁用状态"""
         # 根据当前选择的形状切换对应的属性面板状态
         current_shape = self.canvas.current_shape
+        current_mode = self.canvas.draw_mode
         
         # 切换状态
         self.properties_enabled = not self.properties_enabled
@@ -1866,6 +2052,25 @@ class GeometryModule(BaseModule):
                 # 重置绘图状态
                 self._reset_drawing_state()
                 self.canvas.update()
+        elif current_mode == "point":
+            self.point_properties_panel.set_enabled(self.properties_enabled)
+            # 更新按钮文本
+            if self.properties_enabled:
+                self.shape_props_button.setText("Désactiver Propriétés")
+                # 连接属性变化信号
+                self.point_properties_panel._property_changed = self._preview_point_from_properties
+                # 初始预览
+                self._preview_point_from_properties()
+            else:
+                self.shape_props_button.setText("Activer Propriétés")
+                # 断开属性变化信号
+                self.point_properties_panel._property_changed = lambda: None
+                # 清除预览
+                if hasattr(self.canvas, 'temp_point'):
+                    self.canvas.temp_point = None
+                # 重置绘图状态
+                self._reset_drawing_state()
+                self.canvas.update()
     
     def _reset_drawing_state(self):
         """重置绘图状态，确保禁用属性面板后恢复到正确的画图状态"""
@@ -1873,9 +2078,13 @@ class GeometryModule(BaseModule):
         self.canvas.temp_shape = None
         self.canvas.line_start_point = None
         self.canvas.triangle_points = []
+        if hasattr(self.canvas, 'temp_point'):
+            self.canvas.temp_point = None
         
-        # 重新选择当前形状，这会完全重置绘图状态
+        # 重新选择当前形状或绘图模式，这会完全重置绘图状态
         current_shape = self.canvas.current_shape
+        current_mode = self.canvas.draw_mode
+        
         if current_shape:
             # 从形状名称中移除"_preview"后缀
             if current_shape.endswith("_preview"):
@@ -1887,6 +2096,11 @@ class GeometryModule(BaseModule):
             self.canvas.current_shape = None
             # 重新选择形状，这会重置所有状态
             self.select_shape(shape_type)
+        elif current_mode:
+            # 重新选择绘图模式
+            temp_mode = current_mode
+            self.canvas.draw_mode = None
+            self.select_draw_mode(temp_mode)
     
     def _preview_rectangle_from_properties(self):
         """根据属性面板中的设置预览矩形"""
@@ -1932,7 +2146,54 @@ class GeometryModule(BaseModule):
             properties['length'] * properties['width']
         )
     
-    # 为兼容性保留原方法
-    def _toggle_square_properties(self):
-        """切换矩形属性面板的显示状态 (兼容旧代码)"""
-        self._toggle_shape_properties()
+    def _preview_point_from_properties(self):
+        """根据属性面板中的设置预览点"""
+        if not self.properties_enabled:
+            return
+            
+        properties = self.point_properties_panel.get_properties()
+        
+        # 计算坐标系中的实际位置
+        center_x = self.canvas.width() // 2
+        center_y = self.canvas.height() // 2
+        grid_spacing = self.canvas.grid_spacing or 1
+        
+        x = center_x + properties['x'] * grid_spacing
+        y = center_y - properties['y'] * grid_spacing  # 反转Y轴，符合数学坐标系
+        
+        # 存储临时点信息用于预览
+        if not hasattr(self.canvas, 'temp_point'):
+            self.canvas.temp_point = None
+            
+        self.canvas.temp_point = (x, y)
+        
+        # 更新画布显示
+        self.canvas.update()
+        
+        # 更新信息面板 - 显示点的坐标信息
+        point_info = f"<span style='background-color:#FBE9E7; border:1px solid #FFCCBC; border-radius:3px; padding:1px 4px; margin-right:5px;'>"
+        point_info += f"<b style='color:#E65100; font-size:11pt;'>Point</b></span> "
+        point_info += f"<b>Coordonnées:</b> ({properties['x']:.2f}, {properties['y']:.2f})"
+        
+        self.info_panel.setText(point_info)
+    
+    def _create_point_from_properties(self):
+        """根据属性面板中的设置创建新的点"""
+        properties = self.point_properties_panel.get_properties()
+        
+        # 计算坐标系中的实际位置
+        center_x = self.canvas.width() // 2
+        center_y = self.canvas.height() // 2
+        grid_spacing = self.canvas.grid_spacing or 1
+        
+        x = center_x + properties['x'] * grid_spacing
+        y = center_y - properties['y'] * grid_spacing  # 反转Y轴，符合数学坐标系
+        
+        # 添加点
+        self.canvas.points.append({'x': x, 'y': y, 'color': "#E65100"})
+        
+        # 更新画布
+        self.canvas.update()
+        
+        # 更新信息面板
+        self.update_coordinate_info()
