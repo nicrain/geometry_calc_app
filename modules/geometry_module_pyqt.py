@@ -205,9 +205,9 @@ class Canvas(QWidget):
         
         # 绘制临时形状
         if self.temp_shape:
-            if (self.current_shape == "square" or self.current_shape == "square_preview") and self.line_start_point is not None:
-                # 优化后的正方形绘制逻辑
-                # 使用虚线绘制正方形预览
+            if (self.current_shape == "rectangle" or self.current_shape == "rectangle_preview") and self.line_start_point is not None:
+                # 优化后的矩形绘制逻辑
+                # 使用虚线绘制矩形预览
                 dash_pen = QPen(QColor("#1A237E"), 2, Qt.PenStyle.DashLine)
                 painter.setPen(dash_pen)
                 # 明确设置空白画刷，确保不填充
@@ -217,20 +217,21 @@ class Canvas(QWidget):
                 x1, y1 = self.line_start_point
                 end_x, end_y = self.temp_shape
                 
-                # 计算边长（取横向和纵向距离的最大值）
-                side_length = max(abs(end_x - x1), abs(end_y - y1))
+                # 对于矩形，使用实际的宽度和高度（不再取最大值）
+                width = abs(end_x - x1)
+                height = abs(end_y - y1)
                 
-                # 根据鼠标位置确定正方形的方向
+                # 根据鼠标位置确定矩形的方向
                 dx = 1 if end_x >= x1 else -1
                 dy = 1 if end_y >= y1 else -1
                 
-                # 计算正方形的四个顶点
+                # 计算矩形的四个顶点
                 # x1, y1 已经是起始点
-                x2, y2 = x1 + side_length * dx, y1   # 右/左上角
-                x3, y3 = x1 + side_length * dx, y1 + side_length * dy  # 右/左下角
-                x4, y4 = x1, y1 + side_length * dy   # 左/右下角
+                x2, y2 = x1 + width * dx, y1   # 右/左上角
+                x3, y3 = x1 + width * dx, y1 + height * dy  # 右/左下角
+                x4, y4 = x1, y1 + height * dy   # 左/右下角
                 
-                # 绘制正方形轮廓，不填充
+                # 绘制矩形轮廓，不填充
                 points = [QPoint(int(x1), int(y1)), QPoint(int(x2), int(y2)), 
                          QPoint(int(x3), int(y3)), QPoint(int(x4), int(y4))]
                 # 使用drawPolygon绘制时可能会填充，改为drawPolyline确保只绘制轮廓
@@ -242,22 +243,28 @@ class Canvas(QWidget):
                 painter.setBrush(QBrush(QColor("#FF5722")))
                 painter.drawEllipse(int(x3) - 5, int(y3) - 5, 10, 10)
                 
-                # 可选：显示边长
-                mid_x = (x1 + x3) / 2
-                mid_y = (y1 + y3) / 2
+                # 可选：显示宽度和高度
+                mid_x_width = (x1 + x2) / 2
+                mid_y_width = (y1 + y2) / 2
+                mid_x_height = (x2 + x3) / 2
+                mid_y_height = (y2 + y3) / 2
                 
-                # 计算实际边长（相对于坐标系）
-                real_side = side_length / self.grid_spacing if self.grid_spacing else side_length
-                side_text = f"{real_side:.1f}"
+                # 计算实际宽度和高度（相对于坐标系）
+                real_width = width / self.grid_spacing if self.grid_spacing else width
+                real_height = height / self.grid_spacing if self.grid_spacing else height
+                width_text = f"{real_width:.1f}"
+                height_text = f"{real_height:.1f}"
                 
                 # 设置文本样式
                 painter.setPen(QPen(QColor("#000000")))
                 font = QFont("Arial", 9)
                 painter.setFont(font)
                 
-                # 绘制边长文本
-                painter.drawText(QRect(int(mid_x - 20), int(mid_y - 10), 40, 20), 
-                                Qt.AlignmentFlag.AlignCenter, side_text)
+                # 绘制宽度和高度文本
+                painter.drawText(QRect(int(mid_x_width - 20), int(mid_y_width - 10), 40, 20), 
+                                Qt.AlignmentFlag.AlignCenter, width_text)
+                painter.drawText(QRect(int(mid_x_height - 20), int(mid_y_height - 10), 40, 20), 
+                                Qt.AlignmentFlag.AlignCenter, height_text)
             
             elif (self.current_shape == "circle" or self.current_shape == "circle_preview") and self.line_start_point is not None:
                 # 使用虚线绘制圆形预览
@@ -357,20 +364,21 @@ class Canvas(QWidget):
                     break
                 parent = parent.parent()
         
-        # 如果在正方形绘制模式下且已有起点，则更新临时正方形
-        elif self.current_shape == "square" and self.line_start_point is not None:
+        # 如果在矩形绘制模式下且已有起点，则更新临时矩形
+        elif self.current_shape == "rectangle" and self.line_start_point is not None:
             self.temp_shape = (self.current_mouse_x, self.current_mouse_y)
-            self.update()  # 重绘画布以显示临时正方形
+            self.update()  # 重绘画布以显示临时矩形
             
-            # 计算正方形的边长（取横向和纵向距离的最大值，确保是正方形）
+            # 计算矩形的宽度和高度
             x1, y1 = self.line_start_point
-            size = max(abs(self.current_mouse_x - x1), abs(self.current_mouse_y - y1))
+            width = abs(self.current_mouse_x - x1)
+            height = abs(self.current_mouse_y - y1)
             
-            # 更新正方形信息
+            # 更新矩形信息
             parent = self.parent()
             while parent:
                 if hasattr(parent, 'update_square_info'):
-                    parent.update_square_info(x1, y1, size)
+                    parent.update_square_info(x1, y1, width)
                     break
                 parent = parent.parent()
         
@@ -427,24 +435,25 @@ class Canvas(QWidget):
     def mouseReleaseEvent(self, event):
         """鼠标释放事件，用于重置临时状态或完成形状绘制"""
         if event.button() == Qt.MouseButton.LeftButton:
-            # 如果在正方形绘制模式下且有起点和临时形状，则完成正方形绘制
-            if self.current_shape == "square" and self.line_start_point is not None and self.temp_shape is not None:
+            # 如果在矩形绘制模式下且有起点和临时形状，则完成矩形绘制
+            if self.current_shape == "rectangle" and self.line_start_point is not None and self.temp_shape is not None:
                 # 获取起点和终点
                 x1, y1 = self.line_start_point
                 end_x, end_y = self.temp_shape
                 
-                # 计算边长（取横向和纵向距离的最大值）
-                side_length = max(abs(end_x - x1), abs(end_y - y1))
+                # 计算宽度和高度（不再取最大值）
+                width = abs(end_x - x1)
+                height = abs(end_y - y1)
                 
-                # 根据鼠标位置确定正方形的方向
+                # 根据鼠标位置确定矩形的方向
                 dx = 1 if end_x >= x1 else -1
                 dy = 1 if end_y >= y1 else -1
                 
-                # 计算正方形的四个顶点
+                # 计算矩形的四个顶点
                 # x1, y1 已经是起始点
-                x2, y2 = x1 + side_length * dx, y1   # 右/左上角
-                x3, y3 = x1 + side_length * dx, y1 + side_length * dy  # 右/左下角
-                x4, y4 = x1, y1 + side_length * dy   # 左/右下角
+                x2, y2 = x1 + width * dx, y1   # 右/左上角
+                x3, y3 = x1 + width * dx, y1 + height * dy  # 右/左下角
+                x4, y4 = x1, y1 + height * dy   # 左/右下角
                 
                 # 添加第二个点（对角顶点）
                 self.points.append({'x': x3, 'y': y3, 'color': "#1A237E"})
@@ -453,29 +462,32 @@ class Canvas(QWidget):
                 self.points.append({'x': x2, 'y': y2, 'color': "#1A237E"})
                 self.points.append({'x': x4, 'y': y4, 'color': "#1A237E"})
                 
+                # 计算实际长度和宽度（相对于坐标系）
+                real_width = width / self.grid_spacing if self.grid_spacing else width
+                real_height = height / self.grid_spacing if self.grid_spacing else height
+                
                 # 添加四条边作为线段
                 self.lines.append({'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2, 'color': "#1A237E"})
                 self.lines.append({'x1': x2, 'y1': y2, 'x2': x3, 'y2': y3, 'color': "#1A237E"})
                 self.lines.append({'x1': x3, 'y1': y3, 'x2': x4, 'y2': y4, 'color': "#1A237E"})
                 self.lines.append({'x1': x4, 'y1': y4, 'x2': x1, 'y2': y1, 'color': "#1A237E"})
                 
-                # 计算实际边长（相对于坐标系）
-                real_side = side_length / self.grid_spacing if self.grid_spacing else side_length
-                side_text = f"{real_side:.1f}"
+                # 添加边长文本 - 交替使用宽度和高度
+                self.line_texts.append(f"{real_width:.1f}")  # 上边(宽)
+                self.line_texts.append(f"{real_height:.1f}")  # 右边(高)
+                self.line_texts.append(f"{real_width:.1f}")  # 下边(宽)
+                self.line_texts.append(f"{real_height:.1f}")  # 左边(高)
                 
-                # 添加边长文本
-                for _ in range(4):
-                    self.line_texts.append(side_text)
-                
-                # 计算和存储正方形的属性：面积和周长
-                area = side_length ** 2
-                perimeter = 4 * side_length
+                # 计算和存储矩形的属性：面积和周长
+                area = width * height
+                perimeter = 2 * (width + height)
                 
                 # 存储到形状属性中
                 self.shapes.append({
-                    'type': 'square',
+                    'type': 'rectangle',  # 改为'rectangle'
                     'vertices': [(x1, y1), (x2, y2), (x3, y3), (x4, y4)],
-                    'side': side_length,
+                    'width': width,
+                    'height': height,
                     'area': area,
                     'perimeter': perimeter,
                     'color': "#1A237E"
@@ -489,7 +501,7 @@ class Canvas(QWidget):
                 parent = self.parent()
                 while parent:
                     if hasattr(parent, 'update_square_info_complete'):
-                        parent.update_square_info_complete(real_side, (real_side ** 2) / self.grid_spacing)
+                        parent.update_square_info_complete(real_height, real_width, (real_width * real_height))
                         break
                     elif hasattr(parent, 'update_coordinate_info'):
                         parent.update_coordinate_info()
@@ -568,10 +580,10 @@ class Canvas(QWidget):
                     parent = parent.parent()
                 self.update()
             
-            # 在正方形绘制模式下，使用与线段相同的交互方式
-            elif self.current_shape == "square":
+            # 在矩形绘制模式下，使用与线段相同的交互方式
+            elif self.current_shape == "rectangle":
                 if self.line_start_point is None:
-                    # 设置正方形起点
+                    # 设置矩形起点
                     self.line_start_point = (self.start_x, self.start_y)
                     # 重置临时形状
                     self.temp_shape = None
@@ -590,9 +602,9 @@ class Canvas(QWidget):
                         parent = parent.parent()
                     self.update()
                 else:
-                    # 完成正方形绘制
+                    # 完成矩形绘制
                     self.temp_shape = (self.start_x, self.start_y)
-                    # 触发mouseReleaseEvent中的正方形绘制逻辑
+                    # 触发mouseReleaseEvent中的矩形绘制逻辑
                     self.mouseReleaseEvent(event)
             
             # 在圆形绘制模式下，使用与线段相同的交互方式
@@ -810,8 +822,8 @@ class Canvas(QWidget):
                         parent = parent.parent()
                     self.update()
 
-class SimpleSquarePropertiesPanel(QFrame):
-    """简化的正方形属性面板，只提供边长和位置设置"""
+class SimpleRectanglePropertiesPanel(QFrame):
+    """简化的矩形属性面板，提供长度、宽度和位置设置"""
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -842,7 +854,7 @@ class SimpleSquarePropertiesPanel(QFrame):
         layout.setSpacing(8)
         
         # 标题
-        title_label = QLabel("Propriétés du Carré", self)
+        title_label = QLabel("Propriétés du Rectangle", self)
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #1B5E20;")
         layout.addWidget(title_label)
@@ -852,30 +864,39 @@ class SimpleSquarePropertiesPanel(QFrame):
         properties_layout.setVerticalSpacing(10)
         properties_layout.setHorizontalSpacing(8)
         
-        # 边长设置
-        properties_layout.addWidget(QLabel("Côté:"), 0, 0)
-        self.side_length_spin = QDoubleSpinBox()
-        self.side_length_spin.setRange(0.1, 50.0)
-        self.side_length_spin.setSingleStep(0.5)
-        self.side_length_spin.setValue(5.0)
-        self.side_length_spin.setSuffix(" cm")
-        properties_layout.addWidget(self.side_length_spin, 0, 1)
+        # 长度设置
+        properties_layout.addWidget(QLabel("Longueur:"), 0, 0)
+        self.length_spin = QDoubleSpinBox()
+        self.length_spin.setRange(0.1, 50.0)
+        self.length_spin.setSingleStep(0.5)
+        self.length_spin.setValue(5.0)
+        self.length_spin.setSuffix(" cm")
+        properties_layout.addWidget(self.length_spin, 0, 1)
+        
+        # 宽度设置
+        properties_layout.addWidget(QLabel("Largeur:"), 1, 0)
+        self.width_spin = QDoubleSpinBox()
+        self.width_spin.setRange(0.1, 50.0)
+        self.width_spin.setSingleStep(0.5)
+        self.width_spin.setValue(3.0)
+        self.width_spin.setSuffix(" cm")
+        properties_layout.addWidget(self.width_spin, 1, 1)
         
         # X坐标
-        properties_layout.addWidget(QLabel("X:"), 1, 0)
+        properties_layout.addWidget(QLabel("X:"), 2, 0)
         self.x_spin = QDoubleSpinBox()
         self.x_spin.setRange(-50.0, 50.0)
         self.x_spin.setSingleStep(1.0)
         self.x_spin.setValue(0.0)
-        properties_layout.addWidget(self.x_spin, 1, 1)
+        properties_layout.addWidget(self.x_spin, 2, 1)
         
         # Y坐标
-        properties_layout.addWidget(QLabel("Y:"), 2, 0)
+        properties_layout.addWidget(QLabel("Y:"), 3, 0)
         self.y_spin = QDoubleSpinBox()
         self.y_spin.setRange(-50.0, 50.0)
         self.y_spin.setSingleStep(1.0)
         self.y_spin.setValue(0.0)
-        properties_layout.addWidget(self.y_spin, 2, 1)
+        properties_layout.addWidget(self.y_spin, 3, 1)
         
         layout.addLayout(properties_layout)
         
@@ -906,22 +927,26 @@ class SimpleSquarePropertiesPanel(QFrame):
         self.setFixedWidth(220)
         
         # 添加值变化信号，供外部连接
-        self.side_length_spin.valueChanged.connect(self._property_changed)
+        self.length_spin.valueChanged.connect(self._property_changed)
+        self.width_spin.valueChanged.connect(self._property_changed)
         self.x_spin.valueChanged.connect(self._property_changed)
         self.y_spin.valueChanged.connect(self._property_changed)
     
     def get_properties(self):
         """获取当前设置的属性"""
         return {
-            'side': self.side_length_spin.value(),
+            'length': self.length_spin.value(),
+            'width': self.width_spin.value(),
             'x': self.x_spin.value(),
             'y': self.y_spin.value()
         }
     
     def set_properties(self, properties):
         """设置面板属性值"""
-        if 'side' in properties:
-            self.side_length_spin.setValue(properties['side'])
+        if 'length' in properties:
+            self.length_spin.setValue(properties['length'])
+        if 'width' in properties:
+            self.width_spin.setValue(properties['width'])
         if 'x' in properties:
             self.x_spin.setValue(properties['x'])
         if 'y' in properties:
@@ -929,7 +954,8 @@ class SimpleSquarePropertiesPanel(QFrame):
     
     def set_enabled(self, enabled=True):
         """设置面板输入控件的启用/禁用状态"""
-        self.side_length_spin.setEnabled(enabled)
+        self.length_spin.setEnabled(enabled)
+        self.width_spin.setEnabled(enabled)
         self.x_spin.setEnabled(enabled)
         self.y_spin.setEnabled(enabled)
         self.create_button.setEnabled(enabled)
@@ -973,8 +999,8 @@ class SimpleSquarePropertiesPanel(QFrame):
         # 发送信号给父组件
         parent = self.parent()
         while parent:
-            if hasattr(parent, '_preview_square_from_properties'):
-                parent._preview_square_from_properties()
+            if hasattr(parent, '_preview_rectangle_from_properties'):
+                parent._preview_rectangle_from_properties()
                 break
             parent = parent.parent()
 
@@ -1218,29 +1244,26 @@ class GeometryModule(BaseModule):
         
         # 初始化按钮引用
         self.circle_button = None
-        self.square_button = None
+        self.rectangle_button = None  # 改为rectangle_button
         self.triangle_button = None
         self.point_button = None
         self.line_button = None
         self.active_button = None
         
-        # 创建简化的圆形属性面板和正方形属性面板 - 在创建工具栏之前初始化
+        # 创建简化的圆形属性面板和矩形属性面板 - 在创建工具栏之前初始化
         self.circle_properties_panel = SimpleCirclePropertiesPanel()
         self.circle_properties_panel.set_enabled(False)  # 默认禁用
         self.circle_properties_panel.hide()  # 默认隐藏
         
-        self.square_properties_panel = SimpleSquarePropertiesPanel()
-        self.square_properties_panel.set_enabled(False)  # 默认禁用
-        self.square_properties_panel.hide()  # 默认隐藏
+        self.rectangle_properties_panel = SimpleRectanglePropertiesPanel()  # 改为矩形属性面板
+        self.rectangle_properties_panel.set_enabled(False)  # 默认禁用
+        self.rectangle_properties_panel.hide()  # 默认隐藏
         
         # 创建工具栏
         self.create_geometry_tools(tools_frame)
         
         # 连接按钮信号 - 移除对应用按钮的引用
-        self.square_properties_panel.create_button.clicked.connect(self._create_square_from_properties)
-        
-        # 连接圆形属性面板按钮信号 - 移除对应用按钮的引用
-        self.circle_properties_panel.create_button.clicked.connect(self._create_circle_from_properties)
+        self.rectangle_properties_panel.create_button.clicked.connect(self._create_rectangle_from_properties)  # 改为矩形
         
         # 属性面板是否启用的状态标记
         self.properties_enabled = False
@@ -1270,12 +1293,12 @@ class GeometryModule(BaseModule):
         self.line_button.clicked.connect(lambda: self.select_draw_mode("line"))
         self.tools_layout.addWidget(self.line_button, 1, 0)
         
-        # 添加正方形按钮
-        self.square_button = MetroButton("Carré", "#1A237E", "#FFFFFF")
-        self.square_button.setMinimumSize(110, 110)
-        self.square_button.setFont(QFont("Arial", 12, weight=QFont.Weight.Bold))
-        self.square_button.clicked.connect(lambda: self.select_shape("square"))
-        self.tools_layout.addWidget(self.square_button, 1, 1)
+        # 添加矩形按钮
+        self.rectangle_button = MetroButton("Rectangle", "#1A237E", "#FFFFFF")  # 改为"Rectangle"
+        self.rectangle_button.setMinimumSize(110, 110)
+        self.rectangle_button.setFont(QFont("Arial", 12, weight=QFont.Weight.Bold))
+        self.rectangle_button.clicked.connect(lambda: self.select_shape("rectangle"))  # 改为"rectangle"
+        self.tools_layout.addWidget(self.rectangle_button, 1, 1)
         
         # 添加圆形按钮
         self.circle_button = MetroButton("Cercle", "#1B5E20", "#FFFFFF")
@@ -1304,7 +1327,7 @@ class GeometryModule(BaseModule):
         
         # 将属性面板添加到布局中但默认隐藏 - 修改这部分代码
         self.tools_layout.addWidget(self.circle_properties_panel, 4, 0, 1, 2)
-        self.tools_layout.addWidget(self.square_properties_panel, 5, 0, 1, 2)
+        self.tools_layout.addWidget(self.rectangle_properties_panel, 5, 0, 1, 2)  # 改为矩形属性面板
         
         # 添加弹性空间 - 确保清除和坐标轴按钮在底部
         spacer = QWidget()
@@ -1332,7 +1355,7 @@ class GeometryModule(BaseModule):
         self.canvas.current_shape = None
         
         # 重置所有按钮状态
-        for button in [self.point_button, self.line_button, self.square_button, 
+        for button in [self.point_button, self.line_button, self.rectangle_button, 
                       self.circle_button, self.triangle_button]:
             if button:
                 button.set_active(False)
@@ -1345,7 +1368,7 @@ class GeometryModule(BaseModule):
             
         # 隐藏所有属性面板和属性按钮
         self.shape_props_button.hide()
-        self.square_properties_panel.hide()
+        self.rectangle_properties_panel.hide()
         self.circle_properties_panel.hide()
     
     def select_shape(self, shape):
@@ -1355,23 +1378,23 @@ class GeometryModule(BaseModule):
         self.canvas.temp_shape = None  # 添加这行，确保临时形状被重置
         
         # 重置所有按钮状态
-        for button in [self.point_button, self.line_button, self.square_button, 
+        for button in [self.point_button, self.line_button, self.rectangle_button, 
                       self.circle_button, self.triangle_button]:
             if button:
                 button.set_active(False)
         
         # 隐藏所有属性面板，重置属性启用状态
         self.shape_props_button.hide()
-        self.square_properties_panel.hide()
+        self.rectangle_properties_panel.hide()
         self.circle_properties_panel.hide()
         self.properties_enabled = False
         
         # 设置当前按钮状态
-        if shape == "square":
-            self.square_button.set_active(True)
+        if shape == "rectangle":
+            self.rectangle_button.set_active(True)
             # 显示属性面板，但保持禁用状态
-            self.square_properties_panel.set_enabled(False)
-            self.square_properties_panel.show()
+            self.rectangle_properties_panel.set_enabled(False)
+            self.rectangle_properties_panel.show()
             self.shape_props_button.show()
             self.shape_props_button.setText("Activer Propriétés")
         elif shape == "circle":
@@ -1581,42 +1604,53 @@ class GeometryModule(BaseModule):
         self.info_panel.setText(line_info)
         
     def update_square_info(self, start_x, start_y, size):
-        """更新正方形信息，显示顶点坐标、边长、面积和周长"""
-        if self.canvas.current_shape != "square":
+        """更新矩形信息，显示顶点坐标、长宽、面积和周长"""
+        if self.canvas.current_shape != "rectangle":
             return
+        
+        # 替换为矩形代码的实现
+        # 这里可能需要增加一个参数来区分长和宽
+        # 暂时保持使用同一个值作为长和宽（作为方形）
             
         # 计算相对于坐标轴的坐标
         center_x = self.canvas.width() // 2
         center_y = self.canvas.height() // 2
         grid_spacing = self.canvas.grid_spacing
         
-        # 计算实际边长（相对于坐标系单位）
-        real_size = size / grid_spacing if grid_spacing else size
+        # 获取临时形状中的宽度和高度
+        if self.canvas.temp_shape and self.canvas.line_start_point:
+            end_x, end_y = self.canvas.temp_shape
+            width = abs(end_x - start_x) / grid_spacing
+            height = abs(end_y - start_y) / grid_spacing
+        else:
+            width = height = size / grid_spacing
         
         # 计算面积和周长
-        area = real_size ** 2
-        perimeter = 4 * real_size
+        area = width * height
+        perimeter = 2 * (width + height)
         
-        # 构建正方形信息，使用HTML格式化
-        square_info = f"<span style='background-color:#E8EAF6; border:1px solid #C5CAE9; border-radius:3px; padding:1px 4px; margin-right:5px;'>"
-        square_info += f"<b style='color:#1A237E; font-size:11pt;'>Carré</b></span> "
-        square_info += f"<span style='color:#1A237E; font-weight:bold;'>Côté:</span> {real_size:.2f} | "
-        square_info += f"<span style='color:#1A237E; font-weight:bold;'>Aire:</span> {area:.2f} | "
-        square_info += f"<span style='color:#1A237E; font-weight:bold;'>Périmètre:</span> {perimeter:.2f}"
+        # 构建矩形信息，使用HTML格式化
+        rect_info = f"<span style='background-color:#E8EAF6; border:1px solid #C5CAE9; border-radius:3px; padding:1px 4px; margin-right:5px;'>"
+        rect_info += f"<b style='color:#1A237E; font-size:11pt;'>Rectangle</b></span> "
+        rect_info += f"<span style='color:#1A237E; font-weight:bold;'>Longueur:</span> {width:.2f} | "
+        rect_info += f"<span style='color:#1A237E; font-weight:bold;'>Largeur:</span> {height:.2f} | "
+        rect_info += f"<span style='color:#1A237E; font-weight:bold;'>Aire:</span> {area:.2f} | "
+        rect_info += f"<span style='color:#1A237E; font-weight:bold;'>Périmètre:</span> {perimeter:.2f}"
         
         # 更新信息显示栏
-        self.info_panel.setText(square_info)
+        self.info_panel.setText(rect_info)
     
-    def update_square_info_complete(self, side_length, area):
-        """正方形绘制完成后，显示正方形的特性"""
-        square_info = f"<span style='background-color:#E8EAF6; border:1px solid #C5CAE9; border-radius:3px; padding:1px 4px; margin-right:5px;'>"
-        square_info += f"<b style='color:#1A237E; font-size:11pt;'>Carré</b></span> "
-        square_info += f"<span style='color:#1A237E; font-weight:bold;'>Côté:</span> {side_length:.2f} | "
-        square_info += f"<span style='color:#1A237E; font-weight:bold;'>Aire:</span> {area:.2f} | "
-        square_info += f"<span style='color:#1A237E; font-weight:bold;'>Périmètre:</span> {side_length * 4:.2f}"
+    def update_square_info_complete(self, length, width, area):
+        """矩形绘制完成后，显示矩形的特性"""
+        rect_info = f"<span style='background-color:#E8EAF6; border:1px solid #C5CAE9; border-radius:3px; padding:1px 4px; margin-right:5px;'>"
+        rect_info += f"<b style='color:#1A237E; font-size:11pt;'>Rectangle</b></span> "
+        rect_info += f"<span style='color:#1A237E; font-weight:bold;'>Longueur:</span> {length:.2f} | "
+        rect_info += f"<span style='color:#1A237E; font-weight:bold;'>Largeur:</span> {width:.2f} | "
+        rect_info += f"<span style='color:#1A237E; font-weight:bold;'>Aire:</span> {area:.2f} | "
+        rect_info += f"<span style='color:#1A237E; font-weight:bold;'>Périmètre:</span> {(2*(length+width)):.2f}"
         
         # 更新信息显示栏
-        self.info_panel.setText(square_info)
+        self.info_panel.setText(rect_info)
     
     def update_circle_info(self, center_x, center_y, radius):
         """更新圆形信息，显示圆心坐标、半径、面积和周长"""
@@ -1729,14 +1763,14 @@ class GeometryModule(BaseModule):
             self.update_coordinate_info()
     
     def _apply_square_properties(self):
-        """应用属性面板中的设置到选中的正方形 (为向后兼容保留)"""
-        properties = self.square_properties_panel.get_properties()
+        """应用属性面板中的设置到选中的矩形 (为向后兼容保留)"""
+        properties = self.rectangle_properties_panel.get_properties()
         # 更新信息面板
-        self.update_square_info_complete(properties['side'], properties['side']**2)
+        self.update_square_info_complete(properties['length'], properties['width'], properties['length'] * properties['width'])
 
-    def _create_square_from_properties(self):
-        """根据属性面板中的设置创建新的正方形"""
-        properties = self.square_properties_panel.get_properties()
+    def _create_rectangle_from_properties(self):
+        """根据属性面板中的设置创建新的矩形"""
+        properties = self.rectangle_properties_panel.get_properties()
         
         # 计算坐标系中的实际位置
         center_x = self.canvas.width() // 2
@@ -1746,14 +1780,16 @@ class GeometryModule(BaseModule):
         x = center_x + properties['x'] * grid_spacing
         y = center_y - properties['y'] * grid_spacing  # 反转Y轴，符合数学坐标系
         
-        # 计算正方形顶点
-        side_px = properties['side'] * grid_spacing
-        half_side = side_px / 2
+        # 计算矩形顶点 - 使用长度和宽度
+        length_px = properties['length'] * grid_spacing
+        width_px = properties['width'] * grid_spacing
+        half_length = length_px / 2
+        half_width = width_px / 2
         
-        x1, y1 = x - half_side, y - half_side  # 左上
-        x2, y2 = x + half_side, y - half_side  # 右上
-        x3, y3 = x + half_side, y + half_side  # 右下
-        x4, y4 = x - half_side, y + half_side  # 左下
+        x1, y1 = x - half_length, y - half_width  # 左上
+        x2, y2 = x + half_length, y - half_width  # 右上
+        x3, y3 = x + half_length, y + half_width  # 右下
+        x4, y4 = x - half_length, y + half_width  # 左下
         
         # 添加四个顶点
         color = "#1A237E"  # 使用默认蓝色
@@ -1762,10 +1798,13 @@ class GeometryModule(BaseModule):
         self.canvas.points.append({'x': x3, 'y': y3, 'color': color})
         self.canvas.points.append({'x': x4, 'y': y4, 'color': color})
         
-        # 添加四条边
-        for i in range(4):
-            self.canvas.line_texts.append(f"{properties['side']:.1f}")
+        # 添加四条边的长度文本
+        self.canvas.line_texts.append(f"{properties['width']:.1f}")  # 上边(宽)
+        self.canvas.line_texts.append(f"{properties['length']:.1f}")  # 右边(长)
+        self.canvas.line_texts.append(f"{properties['width']:.1f}")  # 下边(宽)
+        self.canvas.line_texts.append(f"{properties['length']:.1f}")  # 左边(长)
         
+        # 添加四条边
         self.canvas.lines.append({'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2, 'color': color})
         self.canvas.lines.append({'x1': x2, 'y1': y2, 'x2': x3, 'y2': y3, 'color': color})
         self.canvas.lines.append({'x1': x3, 'y1': y3, 'x2': x4, 'y2': y4, 'color': color})
@@ -1774,57 +1813,12 @@ class GeometryModule(BaseModule):
         # 更新画布
         self.canvas.update()
         
-        # 更新信息面板
-        self.update_square_info_complete(properties['side'], properties['side']**2)
-    
-    def _apply_circle_properties(self):
-        """应用属性面板中的设置到选中的圆形 (为向后兼容保留)"""
-        properties = self.circle_properties_panel.get_properties()
-        # 更新信息面板
-        radius = properties['radius']
-        area = math.pi * (radius ** 2)
-        self.update_circle_info_complete(radius, area)
-
-    def _create_circle_from_properties(self):
-        """根据属性面板中的设置创建新的圆形"""
-        properties = self.circle_properties_panel.get_properties()
-        
-        # 计算坐标系中的实际位置
-        center_x = self.canvas.width() // 2
-        center_y = self.canvas.height() // 2
-        grid_spacing = self.canvas.grid_spacing or 1
-        
-        x = center_x + properties['x'] * grid_spacing
-        y = center_y - properties['y'] * grid_spacing  # 反转Y轴，符合数学坐标系
-        
-        # 计算圆形参数
-        radius_px = properties['radius'] * grid_spacing
-        
-        # 添加圆心点
-        color = "#1B5E20"  # 使用深绿色
-        self.canvas.points.append({'x': x, 'y': y, 'color': color})
-        
-        # 计算和存储圆的属性
-        circumference = 2 * math.pi * radius_px
-        area = math.pi * (radius_px ** 2)
-        
-        # 存储到形状属性中
-        self.canvas.shapes.append({
-            'type': 'circle',
-            'center': (x, y),
-            'radius': radius_px,
-            'circumference': circumference,
-            'area': area,
-            'color': color
-        })
-        
-        # 更新画布
-        self.canvas.update()
-        
-        # 更新信息面板
-        real_radius = properties['radius']
-        real_area = math.pi * (real_radius ** 2)
-        self.update_circle_info_complete(real_radius, real_area)
+        # 更新信息面板 - 使用长宽计算面积
+        self.update_square_info_complete(
+            properties['length'], 
+            properties['width'], 
+            properties['length'] * properties['width']
+        )
     
     def _toggle_shape_properties(self):
         """切换属性面板的启用/禁用状态"""
@@ -1834,19 +1828,19 @@ class GeometryModule(BaseModule):
         # 切换状态
         self.properties_enabled = not self.properties_enabled
         
-        if current_shape == "square" or current_shape == "square_preview":
-            self.square_properties_panel.set_enabled(self.properties_enabled)
+        if current_shape == "rectangle" or current_shape == "rectangle_preview":
+            self.rectangle_properties_panel.set_enabled(self.properties_enabled)
             # 更新按钮文本
             if self.properties_enabled:
                 self.shape_props_button.setText("Désactiver Propriétés")
                 # 连接属性变化信号
-                self.square_properties_panel._property_changed = self._preview_square_from_properties
+                self.rectangle_properties_panel._property_changed = self._preview_rectangle_from_properties
                 # 初始预览
-                self._preview_square_from_properties()
+                self._preview_rectangle_from_properties()
             else:
                 self.shape_props_button.setText("Activer Propriétés")
                 # 断开属性变化信号
-                self.square_properties_panel._property_changed = lambda: None
+                self.rectangle_properties_panel._property_changed = lambda: None
                 # 清除预览和重置状态
                 self.canvas.temp_shape = None
                 self.canvas.line_start_point = None  # 重置起始点
@@ -1894,12 +1888,12 @@ class GeometryModule(BaseModule):
             # 重新选择形状，这会重置所有状态
             self.select_shape(shape_type)
     
-    def _preview_square_from_properties(self):
-        """根据属性面板中的设置预览正方形"""
+    def _preview_rectangle_from_properties(self):
+        """根据属性面板中的设置预览矩形"""
         if not self.properties_enabled:
             return
             
-        properties = self.square_properties_panel.get_properties()
+        properties = self.rectangle_properties_panel.get_properties()
         
         # 计算坐标系中的实际位置
         center_x = self.canvas.width() // 2
@@ -1909,67 +1903,36 @@ class GeometryModule(BaseModule):
         x = center_x + properties['x'] * grid_spacing
         y = center_y - properties['y'] * grid_spacing  # 反转Y轴，符合数学坐标系
         
-        # 计算正方形顶点
-        side_px = properties['side'] * grid_spacing
-        half_side = side_px / 2
+        # 计算矩形顶点 - 使用长度和宽度
+        length_px = properties['length'] * grid_spacing
+        width_px = properties['width'] * grid_spacing
+        half_length = length_px / 2
+        half_width = width_px / 2
         
         # 存储预览信息
         self.preview_shape = {
-            'type': 'square',
+            'type': 'rectangle',
             'x': x,
             'y': y,
-            'side': side_px
+            'length': length_px,
+            'width': width_px
         }
         
         # 设置特殊预览模式标识
-        self.canvas.current_shape = "square_preview"
+        self.canvas.current_shape = "rectangle_preview"
         # 设置临时状态用于预览显示
-        self.canvas.line_start_point = (x - half_side, y - half_side)  # 左上角
-        self.canvas.temp_shape = (x + half_side, y + half_side)  # 右下角
+        self.canvas.line_start_point = (x - half_length, y - half_width)  # 左上角
+        self.canvas.temp_shape = (x + half_length, y + half_width)  # 右下角
         
         # 更新画布和信息面板
         self.canvas.update()
-        self.update_square_info_complete(properties['side'], properties['side']**2)
+        self.update_square_info_complete(
+            properties['length'], 
+            properties['width'], 
+            properties['length'] * properties['width']
+        )
     
-    def _preview_circle_from_properties(self):
-        """根据属性面板中的设置预览圆形"""
-        if not self.properties_enabled:
-            return
-            
-        properties = self.circle_properties_panel.get_properties()
-        
-        # 计算坐标系中的实际位置
-        center_x = self.canvas.width() // 2
-        center_y = self.canvas.height() // 2
-        grid_spacing = self.canvas.grid_spacing or 1
-        
-        x = center_x + properties['x'] * grid_spacing
-        y = center_y - properties['y'] * grid_spacing  # 反转Y轴，符合数学坐标系
-        
-        # 计算圆形半径
-        radius_px = properties['radius'] * grid_spacing
-        
-        # 存储预览信息
-        self.preview_shape = {
-            'type': 'circle',
-            'x': x,
-            'y': y,
-            'radius': radius_px
-        }
-        
-        # 设置特殊预览模式标识
-        self.canvas.current_shape = "circle_preview"
-        # 设置临时状态用于预览显示
-        self.canvas.line_start_point = (x, y)  # 圆心
-        self.canvas.temp_shape = (x + radius_px, y)  # 圆上一点
-        
-        # 更新画布和信息面板
-        self.canvas.update()
-        real_radius = properties['radius']
-        real_area = math.pi * (real_radius ** 2)
-        self.update_circle_info_complete(real_radius, real_area)
-    
-    # 为向后兼容保留原方法
+    # 为兼容性保留原方法
     def _toggle_square_properties(self):
-        """切换正方形属性面板的显示状态 (兼容旧代码)"""
+        """切换矩形属性面板的显示状态 (兼容旧代码)"""
         self._toggle_shape_properties()
