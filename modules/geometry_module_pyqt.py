@@ -205,7 +205,7 @@ class Canvas(QWidget):
         
         # 绘制临时形状
         if self.temp_shape:
-            if self.current_shape == "square" and self.line_start_point is not None:
+            if (self.current_shape == "square" or self.current_shape == "square_preview") and self.line_start_point is not None:
                 # 优化后的正方形绘制逻辑
                 # 使用虚线绘制正方形预览
                 dash_pen = QPen(QColor("#1A237E"), 2, Qt.PenStyle.DashLine)
@@ -259,7 +259,7 @@ class Canvas(QWidget):
                 painter.drawText(QRect(int(mid_x - 20), int(mid_y - 10), 40, 20), 
                                 Qt.AlignmentFlag.AlignCenter, side_text)
             
-            elif self.current_shape == "circle" and self.line_start_point is not None:
+            elif (self.current_shape == "circle" or self.current_shape == "circle_preview") and self.line_start_point is not None:
                 # 使用虚线绘制圆形预览
                 dash_pen = QPen(QColor("#1B5E20"), 2, Qt.PenStyle.DashLine)
                 painter.setPen(dash_pen)
@@ -966,8 +966,17 @@ class SimpleSquarePropertiesPanel(QFrame):
             """)
     
     def _property_changed(self):
-        """属性值变化时发送信号"""
-        pass
+        """属性值变化时发送信号，用于实时预览"""
+        # 获取当前属性值
+        properties = self.get_properties()
+        
+        # 发送信号给父组件
+        parent = self.parent()
+        while parent:
+            if hasattr(parent, '_preview_square_from_properties'):
+                parent._preview_square_from_properties()
+                break
+            parent = parent.parent()
 
 class SimpleCirclePropertiesPanel(QFrame):
     """简化的圆形属性面板，提供半径和位置设置"""
@@ -1125,8 +1134,17 @@ class SimpleCirclePropertiesPanel(QFrame):
             """)
     
     def _property_changed(self):
-        """属性值变化时发送信号"""
-        pass
+        """属性值变化时发送信号，用于实时预览"""
+        # 获取当前属性值
+        properties = self.get_properties()
+        
+        # 发送信号给父组件
+        parent = self.parent()
+        while parent:
+            if hasattr(parent, '_preview_circle_from_properties'):
+                parent._preview_circle_from_properties()
+                break
+            parent = parent.parent()
 
 class GeometryModule(BaseModule):
     def __init__(self, parent=None):
@@ -1334,6 +1352,7 @@ class GeometryModule(BaseModule):
         self.canvas.current_shape = shape
         self.canvas.draw_mode = None
         self.canvas.line_start_point = None
+        self.canvas.temp_shape = None  # 添加这行，确保临时形状被重置
         
         # 重置所有按钮状态
         for button in [self.point_button, self.line_button, self.square_button, 
@@ -1815,7 +1834,7 @@ class GeometryModule(BaseModule):
         # 切换状态
         self.properties_enabled = not self.properties_enabled
         
-        if current_shape == "square":
+        if current_shape == "square" or current_shape == "square_preview":
             self.square_properties_panel.set_enabled(self.properties_enabled)
             # 更新按钮文本
             if self.properties_enabled:
@@ -1828,10 +1847,13 @@ class GeometryModule(BaseModule):
                 self.shape_props_button.setText("Activer Propriétés")
                 # 断开属性变化信号
                 self.square_properties_panel._property_changed = lambda: None
-                # 清除预览
+                # 清除预览和重置状态
                 self.canvas.temp_shape = None
+                self.canvas.line_start_point = None  # 重置起始点
+                # 重置绘图状态
+                self._reset_drawing_state()
                 self.canvas.update()
-        elif current_shape == "circle":
+        elif current_shape == "circle" or current_shape == "circle_preview":
             self.circle_properties_panel.set_enabled(self.properties_enabled)
             # 更新按钮文本
             if self.properties_enabled:
@@ -1844,9 +1866,33 @@ class GeometryModule(BaseModule):
                 self.shape_props_button.setText("Activer Propriétés")
                 # 断开属性变化信号
                 self.circle_properties_panel._property_changed = lambda: None
-                # 清除预览
+                # 清除预览和重置状态
                 self.canvas.temp_shape = None
+                self.canvas.line_start_point = None  # 重置起始点
+                # 重置绘图状态
+                self._reset_drawing_state()
                 self.canvas.update()
+    
+    def _reset_drawing_state(self):
+        """重置绘图状态，确保禁用属性面板后恢复到正确的画图状态"""
+        # 清除Canvas中可能影响绘图的临时状态
+        self.canvas.temp_shape = None
+        self.canvas.line_start_point = None
+        self.canvas.triangle_points = []
+        
+        # 重新选择当前形状，这会完全重置绘图状态
+        current_shape = self.canvas.current_shape
+        if current_shape:
+            # 从形状名称中移除"_preview"后缀
+            if current_shape.endswith("_preview"):
+                shape_type = current_shape.replace("_preview", "")
+            else:
+                shape_type = current_shape
+                
+            # 暂时保存当前形状
+            self.canvas.current_shape = None
+            # 重新选择形状，这会重置所有状态
+            self.select_shape(shape_type)
     
     def _preview_square_from_properties(self):
         """根据属性面板中的设置预览正方形"""
@@ -1875,8 +1921,9 @@ class GeometryModule(BaseModule):
             'side': side_px
         }
         
-        # 在画布上显示预览，通过设置临时状态
-        self.canvas.current_shape = "square"
+        # 设置特殊预览模式标识
+        self.canvas.current_shape = "square_preview"
+        # 设置临时状态用于预览显示
         self.canvas.line_start_point = (x - half_side, y - half_side)  # 左上角
         self.canvas.temp_shape = (x + half_side, y + half_side)  # 右下角
         
@@ -1910,8 +1957,9 @@ class GeometryModule(BaseModule):
             'radius': radius_px
         }
         
-        # 在画布上显示预览，通过设置临时状态
-        self.canvas.current_shape = "circle"
+        # 设置特殊预览模式标识
+        self.canvas.current_shape = "circle_preview"
+        # 设置临时状态用于预览显示
         self.canvas.line_start_point = (x, y)  # 圆心
         self.canvas.temp_shape = (x + radius_px, y)  # 圆上一点
         
