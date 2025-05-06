@@ -302,13 +302,24 @@ class Canvas(QWidget):
                 painter.drawText(QRect(int(mid_x - 30), int(mid_y - 10), 60, 20),
                                 Qt.AlignmentFlag.AlignCenter, radius_text)
             
-            elif self.current_shape == "triangle":
-                if self.line_start_point is not None:
-                    # 使用虚线绘制三角形预览
-                    dash_pen = QPen(QColor("#311B92"), 2, Qt.PenStyle.DashLine)
-                    painter.setPen(dash_pen)
-                    painter.setBrush(Qt.BrushStyle.NoBrush)
+            elif self.current_shape == "triangle" or self.current_shape == "triangle_preview":
+                # 使用虚线绘制三角形预览
+                dash_pen = QPen(QColor("#311B92"), 2, Qt.PenStyle.DashLine)
+                painter.setPen(dash_pen)
+                painter.setBrush(Qt.BrushStyle.NoBrush)
+                
+                if self.current_shape == "triangle_preview" and self.line_start_point is not None and len(self.triangle_points) == 1 and self.temp_shape is not None:
+                    # 从属性面板预览三角形时使用全部三个点
+                    x1, y1 = self.line_start_point
+                    x2, y2 = self.triangle_points[0]
+                    x3, y3 = self.temp_shape
                     
+                    # 绘制三角形的三条边
+                    painter.drawLine(int(x1), int(y1), int(x2), int(y2))
+                    painter.drawLine(int(x2), int(y2), int(x3), int(y3))
+                    painter.drawLine(int(x3), int(y3), int(x1), int(y1))
+                elif self.current_shape == "triangle" and self.line_start_point is not None:
+                    # 常规绘制三角形的逻辑
                     # 获取起点
                     x1, y1 = self.line_start_point
                     
@@ -317,7 +328,7 @@ class Canvas(QWidget):
                         x2, y2 = self.triangle_points[0]
                         
                         # 绘制第一条线段(从第一个点到第二个点)
-                        # painter.drawLine(int(x1), int(y1), int(x2), int(y2))
+                        painter.drawLine(int(x1), int(y1), int(x2), int(y2))
                         
                         # 如果有临时点(鼠标位置)，绘制与第二个点和第一个点的连线
                         if self.temp_shape:
@@ -1879,6 +1890,7 @@ class GeometryModule(BaseModule):
         
         # 初始化按钮引用
         self.circle_button = None
+        
         self.rectangle_button = None  # 改为rectangle_button
         self.triangle_button = None
         self.point_button = None
