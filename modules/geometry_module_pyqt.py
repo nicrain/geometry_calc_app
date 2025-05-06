@@ -1557,6 +1557,256 @@ class SimpleLinePropertiesPanel(QFrame):
                 break
             parent = parent.parent()
 
+class SimpleTrianglePropertiesPanel(QFrame):
+    """简化的三角形属性面板，提供三个顶点坐标设置"""
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFrameShape(QFrame.Shape.StyledPanel)
+        self.setFrameShadow(QFrame.Shadow.Raised)
+        self.setStyleSheet("""
+            QFrame {
+                background-color: #EDE7F6;
+                border-radius: 8px;
+                border: 1px solid #D1C4E9;
+            }
+            QLabel {
+                color: #311B92;
+                font-weight: bold;
+            }
+        """)
+        
+        # 设置阴影效果
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(10)
+        shadow.setColor(QColor("#CCCCCC"))
+        shadow.setOffset(2, 2)
+        self.setGraphicsEffect(shadow)
+        
+        # 设置布局
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(8)
+        
+        # 标题
+        title_label = QLabel("Propriétés du Triangle", self)
+        title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #311B92;")
+        layout.addWidget(title_label)
+        
+        # 创建属性设置网格
+        properties_layout = QGridLayout()
+        properties_layout.setVerticalSpacing(10)
+        properties_layout.setHorizontalSpacing(8)
+        
+        # 第一个顶点 (A)
+        properties_layout.addWidget(QLabel("Point A:"), 0, 0)
+        properties_layout.addWidget(QLabel("X1:"), 1, 0)
+        self.x1_spin = QDoubleSpinBox()
+        self.x1_spin.setRange(-50.0, 50.0)
+        self.x1_spin.setSingleStep(0.5)
+        self.x1_spin.setValue(-2.0)
+        properties_layout.addWidget(self.x1_spin, 1, 1)
+        
+        properties_layout.addWidget(QLabel("Y1:"), 2, 0)
+        self.y1_spin = QDoubleSpinBox()
+        self.y1_spin.setRange(-50.0, 50.0)
+        self.y1_spin.setSingleStep(0.5)
+        self.y1_spin.setValue(-2.0)
+        properties_layout.addWidget(self.y1_spin, 2, 1)
+        
+        # 第二个顶点 (B)
+        properties_layout.addWidget(QLabel("Point B:"), 3, 0)
+        properties_layout.addWidget(QLabel("X2:"), 4, 0)
+        self.x2_spin = QDoubleSpinBox()
+        self.x2_spin.setRange(-50.0, 50.0)
+        self.x2_spin.setSingleStep(0.5)
+        self.x2_spin.setValue(2.0)
+        properties_layout.addWidget(self.x2_spin, 4, 1)
+        
+        properties_layout.addWidget(QLabel("Y2:"), 5, 0)
+        self.y2_spin = QDoubleSpinBox()
+        self.y2_spin.setRange(-50.0, 50.0)
+        self.y2_spin.setSingleStep(0.5)
+        self.y2_spin.setValue(-2.0)
+        properties_layout.addWidget(self.y2_spin, 5, 1)
+        
+        # 第三个顶点 (C)
+        properties_layout.addWidget(QLabel("Point C:"), 6, 0)
+        properties_layout.addWidget(QLabel("X3:"), 7, 0)
+        self.x3_spin = QDoubleSpinBox()
+        self.x3_spin.setRange(-50.0, 50.0)
+        self.x3_spin.setSingleStep(0.5)
+        self.x3_spin.setValue(0.0)
+        properties_layout.addWidget(self.x3_spin, 7, 1)
+        
+        properties_layout.addWidget(QLabel("Y3:"), 8, 0)
+        self.y3_spin = QDoubleSpinBox()
+        self.y3_spin.setRange(-50.0, 50.0)
+        self.y3_spin.setSingleStep(0.5)
+        self.y3_spin.setValue(2.0)
+        properties_layout.addWidget(self.y3_spin, 8, 1)
+        
+        # 三角形的边长显示（只读）
+        properties_layout.addWidget(QLabel("Côtés:"), 9, 0)
+        self.sides_label = QLabel("AB: 4.0, BC: 4.0, CA: 4.0")
+        self.sides_label.setStyleSheet("color: #4527A0; background-color: #F3E5F5; padding: 2px 5px; border-radius: 2px;")
+        properties_layout.addWidget(self.sides_label, 9, 1)
+        
+        # 周长显示（只读）
+        properties_layout.addWidget(QLabel("Périmètre:"), 10, 0)
+        self.perimeter_label = QLabel("12.0 cm")
+        self.perimeter_label.setStyleSheet("color: #4527A0; background-color: #F3E5F5; padding: 2px 5px; border-radius: 2px;")
+        properties_layout.addWidget(self.perimeter_label, 10, 1)
+        
+        layout.addLayout(properties_layout)
+        
+        # 创建按钮
+        buttons_layout = QHBoxLayout()
+        
+        # 创建按钮
+        self.create_button = QPushButton("Créer")
+        self.create_button.setStyleSheet("""
+            QPushButton {
+                background-color: #311B92; 
+                color: white; 
+                border-radius: 4px; 
+                padding: 5px 10px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #4527A0;
+            }
+        """)
+        buttons_layout.addWidget(self.create_button)
+        
+        layout.addLayout(buttons_layout)
+        layout.addStretch()
+        
+        # 设置尺寸策略
+        self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self.setFixedWidth(220)
+        
+        # 添加值变化信号，供外部连接
+        self.x1_spin.valueChanged.connect(self._property_changed)
+        self.y1_spin.valueChanged.connect(self._property_changed)
+        self.x2_spin.valueChanged.connect(self._property_changed)
+        self.y2_spin.valueChanged.connect(self._property_changed)
+        self.x3_spin.valueChanged.connect(self._property_changed)
+        self.y3_spin.valueChanged.connect(self._property_changed)
+        
+        # 初始化计算边长和周长
+        self._update_triangle_properties()
+    
+    def _update_triangle_properties(self):
+        """更新三角形的边长和周长显示"""
+        x1 = self.x1_spin.value()
+        y1 = self.y1_spin.value()
+        x2 = self.x2_spin.value()
+        y2 = self.y2_spin.value()
+        x3 = self.x3_spin.value()
+        y3 = self.y3_spin.value()
+        
+        # 计算三边长度
+        side_ab = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+        side_bc = ((x3 - x2) ** 2 + (y3 - y2) ** 2) ** 0.5
+        side_ca = ((x1 - x3) ** 2 + (y1 - y3) ** 2) ** 0.5
+        
+        # 计算周长
+        perimeter = side_ab + side_bc + side_ca
+        
+        # 更新边长显示
+        self.sides_label.setText(f"AB: {side_ab:.2f}, BC: {side_bc:.2f}, CA: {side_ca:.2f}")
+        
+        # 更新周长显示
+        self.perimeter_label.setText(f"{perimeter:.2f} cm")
+    
+    def get_properties(self):
+        """获取当前设置的属性"""
+        return {
+            'x1': self.x1_spin.value(),
+            'y1': self.y1_spin.value(),
+            'x2': self.x2_spin.value(),
+            'y2': self.y2_spin.value(),
+            'x3': self.x3_spin.value(),
+            'y3': self.y3_spin.value()
+        }
+    
+    def set_properties(self, properties):
+        """设置面板属性值"""
+        if 'x1' in properties:
+            self.x1_spin.setValue(properties['x1'])
+        if 'y1' in properties:
+            self.y1_spin.setValue(properties['y1'])
+        if 'x2' in properties:
+            self.x2_spin.setValue(properties['x2'])
+        if 'y2' in properties:
+            self.y2_spin.setValue(properties['y2'])
+        if 'x3' in properties:
+            self.x3_spin.setValue(properties['x3'])
+        if 'y3' in properties:
+            self.y3_spin.setValue(properties['y3'])
+        
+        # 更新边长和周长
+        self._update_triangle_properties()
+    
+    def set_enabled(self, enabled=True):
+        """设置面板输入控件的启用/禁用状态"""
+        self.x1_spin.setEnabled(enabled)
+        self.y1_spin.setEnabled(enabled)
+        self.x2_spin.setEnabled(enabled)
+        self.y2_spin.setEnabled(enabled)
+        self.x3_spin.setEnabled(enabled)
+        self.y3_spin.setEnabled(enabled)
+        self.create_button.setEnabled(enabled)
+        
+        # 根据状态修改样式
+        if enabled:
+            self.setStyleSheet("""
+                QFrame {
+                    background-color: #EDE7F6;
+                    border-radius: 8px;
+                    border: 1px solid #D1C4E9;
+                }
+                QLabel {
+                    color: #311B92;
+                    font-weight: bold;
+                }
+            """)
+        else:
+            self.setStyleSheet("""
+                QFrame {
+                    background-color: #ECEFF1;
+                    border-radius: 8px;
+                    border: 1px solid #CFD8DC;
+                }
+                QLabel {
+                    color: #607D8B;
+                    font-weight: bold;
+                }
+                QDoubleSpinBox, QPushButton {
+                    background-color: #ECEFF1;
+                    color: #90A4AE;
+                    border: 1px solid #CFD8DC;
+                }
+            """)
+    
+    def _property_changed(self):
+        """属性值变化时发送信号，用于实时预览并更新边长和周长"""
+        # 更新边长和周长
+        self._update_triangle_properties()
+        
+        # 获取当前属性值
+        properties = self.get_properties()
+        
+        # 发送信号给父组件
+        parent = self.parent()
+        while parent:
+            if hasattr(parent, '_preview_triangle_from_properties'):
+                parent._preview_triangle_from_properties()
+                break
+            parent = parent.parent()
+
 class GeometryModule(BaseModule):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -1654,6 +1904,11 @@ class GeometryModule(BaseModule):
         self.line_properties_panel.set_enabled(False)  # 默认禁用
         self.line_properties_panel.hide()  # 默认隐藏
         
+        # 添加三角形属性面板
+        self.triangle_properties_panel = SimpleTrianglePropertiesPanel()
+        self.triangle_properties_panel.set_enabled(False)  # 默认禁用
+        self.triangle_properties_panel.hide()  # 默认隐藏
+        
         # 创建工具栏
         self.create_geometry_tools(tools_frame)
         
@@ -1663,6 +1918,8 @@ class GeometryModule(BaseModule):
         self.point_properties_panel.create_button.clicked.connect(self._create_point_from_properties)
         # 连接线段属性面板的创建按钮信号
         self.line_properties_panel.create_button.clicked.connect(self._create_line_from_properties)
+        # 连接三角形属性面板的创建按钮信号
+        self.triangle_properties_panel.create_button.clicked.connect(self._create_triangle_from_properties)
         
         # 属性面板是否启用的状态标记
         self.properties_enabled = False
@@ -1729,11 +1986,12 @@ class GeometryModule(BaseModule):
         self.tools_layout.addWidget(self.rectangle_properties_panel, 5, 0, 1, 2)  # 改为矩形属性面板
         self.tools_layout.addWidget(self.point_properties_panel, 6, 0, 1, 2)  # 添加点属性面板
         self.tools_layout.addWidget(self.line_properties_panel, 7, 0, 1, 2)  # 添加线段属性面板
+        self.tools_layout.addWidget(self.triangle_properties_panel, 8, 0, 1, 2)  # 添加三角形属性面板
         
         # 添加弹性空间 - 确保清除和坐标轴按钮在底部
         spacer = QWidget()
         spacer.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        self.tools_layout.addWidget(spacer, 8, 0, 1, 2)  # 修改为跨两列
+        self.tools_layout.addWidget(spacer, 9, 0, 1, 2)  # 修改为跨两列
         
         # 将清除和坐标轴按钮移到最下面
         # 添加清除按钮
@@ -1741,7 +1999,7 @@ class GeometryModule(BaseModule):
         clear_button.setMinimumSize(110, 110)
         clear_button.setFont(QFont("Arial", 12, weight=QFont.Weight.Bold))
         clear_button.clicked.connect(self.canvas.clear)
-        self.tools_layout.addWidget(clear_button, 9, 0)
+        self.tools_layout.addWidget(clear_button, 10, 0)
         
         # 添加坐标轴切换按钮
         self.axes_button = MetroButton("Axes", "#607D8B", "#FFFFFF")
@@ -1749,7 +2007,7 @@ class GeometryModule(BaseModule):
         self.axes_button.setFont(QFont("Arial", 12, weight=QFont.Weight.Bold))
         self.axes_button.clicked.connect(self.toggle_axes)
         self.axes_button.set_active(self.canvas.show_axes)  # 根据当前状态设置按钮状态
-        self.tools_layout.addWidget(self.axes_button, 9, 1)
+        self.tools_layout.addWidget(self.axes_button, 10, 1)
     
     def select_draw_mode(self, mode):
         self.canvas.draw_mode = mode
@@ -1766,6 +2024,7 @@ class GeometryModule(BaseModule):
         self.line_properties_panel.hide()
         self.rectangle_properties_panel.hide()
         self.circle_properties_panel.hide()
+        self.triangle_properties_panel.hide()
         self.shape_props_button.hide()
         
         # 设置当前按钮状态
@@ -1802,6 +2061,7 @@ class GeometryModule(BaseModule):
         self.circle_properties_panel.hide()
         self.point_properties_panel.hide()
         self.line_properties_panel.hide()  # 隐藏线段属性面板
+        self.triangle_properties_panel.hide()  # 隐藏三角形属性面板
         self.properties_enabled = False
         
         # 设置当前按钮状态
@@ -1823,6 +2083,12 @@ class GeometryModule(BaseModule):
             self.triangle_button.set_active(True)
             # 重置三角形绘制状态
             self.canvas.triangle_points = []
+            
+            # 显示三角形属性面板，但保持禁用状态
+            self.triangle_properties_panel.set_enabled(False)
+            self.triangle_properties_panel.show()
+            self.shape_props_button.show()
+            self.shape_props_button.setText("Activer Propriétés")
             
             # 显示三角形绘制说明
             self.info_panel.setText("<b>Triangle:</b> Cliquez sur trois points pour dessiner un triangle")
@@ -2320,6 +2586,26 @@ class GeometryModule(BaseModule):
                 # 重置绘图状态
                 self._reset_drawing_state()
                 self.canvas.update()
+        elif current_shape == "triangle" or current_shape == "triangle_preview":
+            self.triangle_properties_panel.set_enabled(self.properties_enabled)
+            # 更新按钮文本
+            if self.properties_enabled:
+                self.shape_props_button.setText("Désactiver Propriétés")
+                # 连接属性变化信号
+                self.triangle_properties_panel._property_changed = self._preview_triangle_from_properties
+                # 初始预览
+                self._preview_triangle_from_properties()
+            else:
+                self.shape_props_button.setText("Activer Propriétés")
+                # 断开属性变化信号
+                self.triangle_properties_panel._property_changed = lambda: None
+                # 清除预览
+                self.canvas.temp_shape = None
+                self.canvas.line_start_point = None
+                self.canvas.triangle_points = []
+                # 重置绘图状态
+                self._reset_drawing_state()
+                self.canvas.update()
     
     def _reset_drawing_state(self):
         """重置绘图状态，确保禁用属性面板后恢复到正确的画图状态"""
@@ -2542,3 +2828,132 @@ class GeometryModule(BaseModule):
         line_info += f"<span style='color:#01579B; font-weight:bold;'>Angle:</span> {angle_deg:.1f}°"
         
         self.info_panel.setText(line_info)
+    
+    def _preview_triangle_from_properties(self):
+        """根据属性面板中的设置预览三角形"""
+        if not self.properties_enabled:
+            return
+            
+        properties = self.triangle_properties_panel.get_properties()
+        
+        # 计算坐标系中的实际位置
+        center_x = self.canvas.width() // 2
+        center_y = self.canvas.height() // 2
+        grid_spacing = self.canvas.grid_spacing or 1
+        
+        # 计算三角形的三个顶点坐标
+        x1 = center_x + properties['x1'] * grid_spacing
+        y1 = center_y - properties['y1'] * grid_spacing  # 反转Y轴，符合数学坐标系
+        x2 = center_x + properties['x2'] * grid_spacing
+        y2 = center_y - properties['y2'] * grid_spacing
+        x3 = center_x + properties['x3'] * grid_spacing
+        y3 = center_y - properties['y3'] * grid_spacing
+        
+        # 设置特殊预览模式标识
+        self.canvas.current_shape = "triangle_preview"
+        
+        # 清空现有三角形点
+        self.canvas.triangle_points = []
+        
+        # 设置三角形的顶点用于预览
+        self.canvas.line_start_point = (x1, y1)  # 第一个点
+        self.canvas.triangle_points = [(x2, y2)]  # 第二个点
+        self.canvas.temp_shape = (x3, y3)  # 第三个点
+        
+        # 计算三条边的长度
+        side1 = ((x2 - x1)**2 + (y2 - y1)**2)**0.5
+        side2 = ((x3 - x2)**2 + (y3 - y2)**2)**0.5
+        side3 = ((x1 - x3)**2 + (y1 - y3)**2)**0.5
+        
+        # 转换为相对坐标系的长度
+        real_side1 = side1 / grid_spacing
+        real_side2 = side2 / grid_spacing
+        real_side3 = side3 / grid_spacing
+        
+        # 计算三角形周长
+        real_perimeter = real_side1 + real_side2 + real_side3
+        
+        # 更新画布
+        self.canvas.update()
+        
+        # 更新信息面板
+        triangle_info = f"<span style='background-color:#EDE7F6; border:1px solid #D1C4E9; border-radius:3px; padding:1px 4px; margin-right:5px;'>"
+        triangle_info += f"<b style='color:#311B92; font-size:11pt;'>Triangle</b></span> "
+        triangle_info += f"A({properties['x1']:.2f}, {properties['y1']:.2f}), B({properties['x2']:.2f}, {properties['y2']:.2f}), C({properties['x3']:.2f}, {properties['y3']:.2f}) | "
+        triangle_info += f"<span style='color:#311B92; font-weight:bold;'>Côtés:</span> AB={real_side1:.2f}, BC={real_side2:.2f}, CA={real_side3:.2f} | "
+        triangle_info += f"<span style='color:#311B92; font-weight:bold;'>Périmètre:</span> {real_perimeter:.2f}"
+        
+        self.info_panel.setText(triangle_info)
+    
+    def _create_triangle_from_properties(self):
+        """根据属性面板中的设置创建新的三角形"""
+        properties = self.triangle_properties_panel.get_properties()
+        
+        # 计算坐标系中的实际位置
+        center_x = self.canvas.width() // 2
+        center_y = self.canvas.height() // 2
+        grid_spacing = self.canvas.grid_spacing or 1
+        
+        # 计算三角形的三个顶点坐标
+        x1 = center_x + properties['x1'] * grid_spacing
+        y1 = center_y - properties['y1'] * grid_spacing  # 反转Y轴，符合数学坐标系
+        x2 = center_x + properties['x2'] * grid_spacing
+        y2 = center_y - properties['y2'] * grid_spacing
+        x3 = center_x + properties['x3'] * grid_spacing
+        y3 = center_y - properties['y3'] * grid_spacing
+        
+        # 添加三个顶点
+        self.canvas.points.append({'x': x1, 'y': y1, 'color': "#311B92"})
+        self.canvas.points.append({'x': x2, 'y': y2, 'color': "#311B92"})
+        self.canvas.points.append({'x': x3, 'y': y3, 'color': "#311B92"})
+        
+        # 计算三条边的长度
+        side1 = ((x2 - x1)**2 + (y2 - y1)**2)**0.5
+        side2 = ((x3 - x2)**2 + (y3 - y2)**2)**0.5
+        side3 = ((x1 - x3)**2 + (y1 - y3)**2)**0.5
+        
+        # 转换为相对坐标系的长度
+        real_side1 = side1 / grid_spacing
+        real_side2 = side2 / grid_spacing
+        real_side3 = side3 / grid_spacing
+        
+        # 添加边长文本
+        self.canvas.line_texts.append(f"{real_side1:.1f}")
+        self.canvas.line_texts.append(f"{real_side2:.1f}")
+        self.canvas.line_texts.append(f"{real_side3:.1f}")
+        
+        # 添加三条边
+        self.canvas.lines.append({'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2, 'color': "#311B92"})
+        self.canvas.lines.append({'x1': x2, 'y1': y2, 'x2': x3, 'y2': y3, 'color': "#311B92"})
+        self.canvas.lines.append({'x1': x3, 'y1': y3, 'x2': x1, 'y2': y1, 'color': "#311B92"})
+        
+        # 计算三角形周长
+        perimeter = side1 + side2 + side3
+        real_perimeter = perimeter / grid_spacing
+        
+        # 存储到形状属性中
+        self.canvas.shapes.append({
+            'type': 'triangle',
+            'vertices': [(x1, y1), (x2, y2), (x3, y3)],
+            'sides': [side1, side2, side3],
+            'area': None,
+            'perimeter': perimeter,
+            'color': "#311B92"
+        })
+        
+        # 重置临时状态
+        self.canvas.line_start_point = None
+        self.canvas.temp_shape = None
+        self.canvas.triangle_points = []
+        
+        # 更新画布
+        self.canvas.update()
+        
+        # 更新信息面板
+        triangle_info = f"<span style='background-color:#EDE7F6; border:1px solid #D1C4E9; border-radius:3px; padding:1px 4px; margin-right:5px;'>"
+        triangle_info += f"<b style='color:#311B92; font-size:11pt;'>Triangle</b></span> "
+        triangle_info += f"A({properties['x1']:.2f}, {properties['y1']:.2f}), B({properties['x2']:.2f}, {properties['y2']:.2f}), C({properties['x3']:.2f}, {properties['y3']:.2f}) | "
+        triangle_info += f"<span style='color:#311B92; font-weight:bold;'>Côtés:</span> AB={real_side1:.2f}, BC={real_side2:.2f}, CA={real_side3:.2f} | "
+        triangle_info += f"<span style='color:#311B92; font-weight:bold;'>Périmètre:</span> {real_perimeter:.2f}"
+        
+        self.info_panel.setText(triangle_info)
