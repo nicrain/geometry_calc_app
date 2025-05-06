@@ -1339,6 +1339,224 @@ class SimpleCirclePropertiesPanel(QFrame):
                 break
             parent = parent.parent()
 
+class SimpleLinePropertiesPanel(QFrame):
+    """简化的线段属性面板，提供起始点坐标、长度和角度设置"""
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFrameShape(QFrame.Shape.StyledPanel)
+        self.setFrameShadow(QFrame.Shadow.Raised)
+        self.setStyleSheet("""
+            QFrame {
+                background-color: #E3F2FD;
+                border-radius: 8px;
+                border: 1px solid #BBDEFB;
+            }
+            QLabel {
+                color: #0277BD;
+                font-weight: bold;
+            }
+        """)
+        
+        # 设置阴影效果
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(10)
+        shadow.setColor(QColor("#CCCCCC"))
+        shadow.setOffset(2, 2)
+        self.setGraphicsEffect(shadow)
+        
+        # 设置布局
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(8)
+        
+        # 标题
+        title_label = QLabel("Propriétés de la Ligne", self)
+        title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #0277BD;")
+        layout.addWidget(title_label)
+        
+        # 创建属性设置网格
+        properties_layout = QGridLayout()
+        properties_layout.setVerticalSpacing(10)
+        properties_layout.setHorizontalSpacing(8)
+        
+        # 起始点X坐标
+        properties_layout.addWidget(QLabel("X1:"), 0, 0)
+        self.x1_spin = QDoubleSpinBox()
+        self.x1_spin.setRange(-50.0, 50.0)
+        self.x1_spin.setSingleStep(0.5)
+        self.x1_spin.setValue(-2.0)
+        properties_layout.addWidget(self.x1_spin, 0, 1)
+        
+        # 起始点Y坐标
+        properties_layout.addWidget(QLabel("Y1:"), 1, 0)
+        self.y1_spin = QDoubleSpinBox()
+        self.y1_spin.setRange(-50.0, 50.0)
+        self.y1_spin.setSingleStep(0.5)
+        self.y1_spin.setValue(-1.0)
+        properties_layout.addWidget(self.y1_spin, 1, 1)
+        
+        # 终点X坐标
+        properties_layout.addWidget(QLabel("X2:"), 2, 0)
+        self.x2_spin = QDoubleSpinBox()
+        self.x2_spin.setRange(-50.0, 50.0)
+        self.x2_spin.setSingleStep(0.5)
+        self.x2_spin.setValue(2.0)
+        properties_layout.addWidget(self.x2_spin, 2, 1)
+        
+        # 终点Y坐标
+        properties_layout.addWidget(QLabel("Y2:"), 3, 0)
+        self.y2_spin = QDoubleSpinBox()
+        self.y2_spin.setRange(-50.0, 50.0)
+        self.y2_spin.setSingleStep(0.5)
+        self.y2_spin.setValue(1.0)
+        properties_layout.addWidget(self.y2_spin, 3, 1)
+        
+        # 长度显示（只读）
+        properties_layout.addWidget(QLabel("Longueur:"), 4, 0)
+        self.length_label = QLabel("4.47 cm")
+        self.length_label.setStyleSheet("color: #01579B; background-color: #E1F5FE; padding: 2px 5px; border-radius: 2px;")
+        properties_layout.addWidget(self.length_label, 4, 1)
+        
+        # 角度显示（只读）
+        properties_layout.addWidget(QLabel("Angle:"), 5, 0)
+        self.angle_label = QLabel("45.0°")
+        self.angle_label.setStyleSheet("color: #01579B; background-color: #E1F5FE; padding: 2px 5px; border-radius: 2px;")
+        properties_layout.addWidget(self.angle_label, 5, 1)
+        
+        layout.addLayout(properties_layout)
+        
+        # 创建按钮
+        buttons_layout = QHBoxLayout()
+        
+        # 创建按钮
+        self.create_button = QPushButton("Créer")
+        self.create_button.setStyleSheet("""
+            QPushButton {
+                background-color: #0277BD; 
+                color: white; 
+                border-radius: 4px; 
+                padding: 5px 10px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #0288D1;
+            }
+        """)
+        buttons_layout.addWidget(self.create_button)
+        
+        layout.addLayout(buttons_layout)
+        layout.addStretch()
+        
+        # 设置尺寸策略
+        self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self.setFixedWidth(220)
+        
+        # 添加值变化信号，供外部连接
+        self.x1_spin.valueChanged.connect(self._property_changed)
+        self.y1_spin.valueChanged.connect(self._property_changed)
+        self.x2_spin.valueChanged.connect(self._property_changed)
+        self.y2_spin.valueChanged.connect(self._property_changed)
+        
+        # 初始化计算长度和角度
+        self._update_length_and_angle()
+    
+    def _update_length_and_angle(self):
+        """更新长度和角度显示"""
+        x1 = self.x1_spin.value()
+        y1 = self.y1_spin.value()
+        x2 = self.x2_spin.value()
+        y2 = self.y2_spin.value()
+        
+        # 计算长度
+        length = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+        self.length_label.setText(f"{length:.2f} cm")
+        
+        # 计算角度（弧度）
+        angle_rad = math.atan2(y1 - y2, x2 - x1)  # 注意y轴向下为正，需要反转
+        # 转换为度数 (0-360°)
+        angle_deg = (angle_rad * 180 / math.pi) % 360
+        self.angle_label.setText(f"{angle_deg:.1f}°")
+    
+    def get_properties(self):
+        """获取当前设置的属性"""
+        return {
+            'x1': self.x1_spin.value(),
+            'y1': self.y1_spin.value(),
+            'x2': self.x2_spin.value(),
+            'y2': self.y2_spin.value()
+        }
+    
+    def set_properties(self, properties):
+        """设置面板属性值"""
+        if 'x1' in properties:
+            self.x1_spin.setValue(properties['x1'])
+        if 'y1' in properties:
+            self.y1_spin.setValue(properties['y1'])
+        if 'x2' in properties:
+            self.x2_spin.setValue(properties['x2'])
+        if 'y2' in properties:
+            self.y2_spin.setValue(properties['y2'])
+        
+        # 更新长度和角度
+        self._update_length_and_angle()
+    
+    def set_enabled(self, enabled=True):
+        """设置面板输入控件的启用/禁用状态"""
+        self.x1_spin.setEnabled(enabled)
+        self.y1_spin.setEnabled(enabled)
+        self.x2_spin.setEnabled(enabled)
+        self.y2_spin.setEnabled(enabled)
+        self.create_button.setEnabled(enabled)
+        
+        # 根据状态修改样式
+        if enabled:
+            self.setStyleSheet("""
+                QFrame {
+                    background-color: #E3F2FD;
+                    border-radius: 8px;
+                    border: 1px solid #BBDEFB;
+                }
+                QLabel {
+                    color: #0277BD;
+                    font-weight: bold;
+                }
+            """)
+        else:
+            self.setStyleSheet("""
+                QFrame {
+                    background-color: #ECEFF1;
+                    border-radius: 8px;
+                    border: 1px solid #CFD8DC;
+                }
+                QLabel {
+                    color: #607D8B;
+                    font-weight: bold;
+                }
+                QDoubleSpinBox, QPushButton {
+                    background-color: #ECEFF1;
+                    color: #90A4AE;
+                    border: 1px solid #CFD8DC;
+                }
+            """)
+    
+    def _property_changed(self):
+        """属性值变化时发送信号，用于实时预览并更新长度和角度"""
+        # 更新长度和角度
+        self._update_length_and_angle()
+        
+        # 获取当前属性值
+        properties = self.get_properties()
+        
+        # 发送信号给父组件
+        parent = self.parent()
+        while parent:
+            if hasattr(parent, '_preview_line_from_properties'):
+                parent._preview_line_from_properties()
+                break
+            parent = parent.parent()
+
 class GeometryModule(BaseModule):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -1431,6 +1649,11 @@ class GeometryModule(BaseModule):
         self.point_properties_panel.set_enabled(False)  # 默认禁用
         self.point_properties_panel.hide()  # 默认隐藏
         
+        # 添加线段属性面板
+        self.line_properties_panel = SimpleLinePropertiesPanel()
+        self.line_properties_panel.set_enabled(False)  # 默认禁用
+        self.line_properties_panel.hide()  # 默认隐藏
+        
         # 创建工具栏
         self.create_geometry_tools(tools_frame)
         
@@ -1438,6 +1661,8 @@ class GeometryModule(BaseModule):
         self.rectangle_properties_panel.create_button.clicked.connect(self._create_rectangle_from_properties)  # 改为矩形
         # 连接点属性面板的创建按钮信号
         self.point_properties_panel.create_button.clicked.connect(self._create_point_from_properties)
+        # 连接线段属性面板的创建按钮信号
+        self.line_properties_panel.create_button.clicked.connect(self._create_line_from_properties)
         
         # 属性面板是否启用的状态标记
         self.properties_enabled = False
@@ -1499,15 +1724,16 @@ class GeometryModule(BaseModule):
         # 保留原属性按钮的引用以保持向后兼容
         self.square_props_button = self.shape_props_button
         
-        # 将属性面板添加到布局中但默认隐藏 - 修改这部分代码
+        # 将属性面板添加到布局中但默认隐藏
         self.tools_layout.addWidget(self.circle_properties_panel, 4, 0, 1, 2)
         self.tools_layout.addWidget(self.rectangle_properties_panel, 5, 0, 1, 2)  # 改为矩形属性面板
         self.tools_layout.addWidget(self.point_properties_panel, 6, 0, 1, 2)  # 添加点属性面板
+        self.tools_layout.addWidget(self.line_properties_panel, 7, 0, 1, 2)  # 添加线段属性面板
         
         # 添加弹性空间 - 确保清除和坐标轴按钮在底部
         spacer = QWidget()
         spacer.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        self.tools_layout.addWidget(spacer, 7, 0, 1, 2)  # 修改为跨两列
+        self.tools_layout.addWidget(spacer, 8, 0, 1, 2)  # 修改为跨两列
         
         # 将清除和坐标轴按钮移到最下面
         # 添加清除按钮
@@ -1515,7 +1741,7 @@ class GeometryModule(BaseModule):
         clear_button.setMinimumSize(110, 110)
         clear_button.setFont(QFont("Arial", 12, weight=QFont.Weight.Bold))
         clear_button.clicked.connect(self.canvas.clear)
-        self.tools_layout.addWidget(clear_button, 8, 0)
+        self.tools_layout.addWidget(clear_button, 9, 0)
         
         # 添加坐标轴切换按钮
         self.axes_button = MetroButton("Axes", "#607D8B", "#FFFFFF")
@@ -1523,7 +1749,7 @@ class GeometryModule(BaseModule):
         self.axes_button.setFont(QFont("Arial", 12, weight=QFont.Weight.Bold))
         self.axes_button.clicked.connect(self.toggle_axes)
         self.axes_button.set_active(self.canvas.show_axes)  # 根据当前状态设置按钮状态
-        self.tools_layout.addWidget(self.axes_button, 8, 1)
+        self.tools_layout.addWidget(self.axes_button, 9, 1)
     
     def select_draw_mode(self, mode):
         self.canvas.draw_mode = mode
@@ -1535,6 +1761,13 @@ class GeometryModule(BaseModule):
             if button:
                 button.set_active(False)
         
+        # 隐藏所有属性面板
+        self.point_properties_panel.hide()
+        self.line_properties_panel.hide()
+        self.rectangle_properties_panel.hide()
+        self.circle_properties_panel.hide()
+        self.shape_props_button.hide()
+        
         # 设置当前按钮状态
         if mode == "point":
             self.point_button.set_active(True)
@@ -1545,15 +1778,11 @@ class GeometryModule(BaseModule):
             self.shape_props_button.setText("Activer Propriétés")
         elif mode == "line":
             self.line_button.set_active(True)
-            
-        # 隐藏所有属性面板和属性按钮
-        if mode != "point":
-            self.shape_props_button.hide()
-            self.point_properties_panel.hide()
-        
-        # 隐藏圆形和矩形属性面板
-        self.rectangle_properties_panel.hide()
-        self.circle_properties_panel.hide()
+            # 显示线段属性面板，但保持禁用状态
+            self.line_properties_panel.set_enabled(False)
+            self.line_properties_panel.show()
+            self.shape_props_button.show()
+            self.shape_props_button.setText("Activer Propriétés")
     
     def select_shape(self, shape):
         self.canvas.current_shape = shape
@@ -1571,7 +1800,8 @@ class GeometryModule(BaseModule):
         self.shape_props_button.hide()
         self.rectangle_properties_panel.hide()
         self.circle_properties_panel.hide()
-        self.point_properties_panel.hide()  # 隐藏点属性面板
+        self.point_properties_panel.hide()
+        self.line_properties_panel.hide()  # 隐藏线段属性面板
         self.properties_enabled = False
         
         # 设置当前按钮状态
@@ -2071,6 +2301,25 @@ class GeometryModule(BaseModule):
                 # 重置绘图状态
                 self._reset_drawing_state()
                 self.canvas.update()
+        elif current_mode == "line":
+            self.line_properties_panel.set_enabled(self.properties_enabled)
+            # 更新按钮文本
+            if self.properties_enabled:
+                self.shape_props_button.setText("Désactiver Propriétés")
+                # 连接属性变化信号
+                self.line_properties_panel._property_changed = self._preview_line_from_properties
+                # 初始预览
+                self._preview_line_from_properties()
+            else:
+                self.shape_props_button.setText("Activer Propriétés")
+                # 断开属性变化信号
+                self.line_properties_panel._property_changed = lambda: None
+                # 清除预览
+                self.canvas.temp_shape = None
+                self.canvas.line_start_point = None
+                # 重置绘图状态
+                self._reset_drawing_state()
+                self.canvas.update()
     
     def _reset_drawing_state(self):
         """重置绘图状态，确保禁用属性面板后恢复到正确的画图状态"""
@@ -2197,3 +2446,99 @@ class GeometryModule(BaseModule):
         
         # 更新信息面板
         self.update_coordinate_info()
+    
+    def _preview_line_from_properties(self):
+        """根据属性面板中的设置预览线段"""
+        if not self.properties_enabled:
+            return
+            
+        properties = self.line_properties_panel.get_properties()
+        
+        # 计算坐标系中的实际位置
+        center_x = self.canvas.width() // 2
+        center_y = self.canvas.height() // 2
+        grid_spacing = self.canvas.grid_spacing or 1
+        
+        # 计算线段的起点和终点
+        x1 = center_x + properties['x1'] * grid_spacing
+        y1 = center_y - properties['y1'] * grid_spacing  # 反转Y轴，符合数学坐标系
+        x2 = center_x + properties['x2'] * grid_spacing
+        y2 = center_y - properties['y2'] * grid_spacing  # 反转Y轴，符合数学坐标系
+        
+        # 设置临时状态用于预览显示
+        self.canvas.line_start_point = (x1, y1)
+        self.canvas.temp_shape = (x2, y2)
+        
+        # 更新画布
+        self.canvas.update()
+        
+        # 计算线段长度
+        length = ((x2 - x1) ** 2 + (y1 - y2) ** 2) ** 0.5  # 注意y轴方向是相反的
+        real_length = length / grid_spacing
+        
+        # 计算角度（弧度）
+        angle_rad = math.atan2(y1 - y2, x2 - x1)  # 注意y轴向下为正，需要反转
+        # 转换为度数 (0-360°)
+        angle_deg = (angle_rad * 180 / math.pi) % 360
+        
+        # 更新信息面板
+        line_info = f"<span style='background-color:#E3F2FD; border:1px solid #BBDEFB; border-radius:3px; padding:1px 4px; margin-right:5px;'>"
+        line_info += f"<b style='color:#0277BD; font-size:11pt;'>Ligne</b></span> "
+        line_info += f"({properties['x1']:.2f}, {properties['y1']:.2f}) → ({properties['x2']:.2f}, {properties['y2']:.2f}) | "
+        line_info += f"<span style='color:#01579B; font-weight:bold;'>Longueur:</span> {real_length:.2f} | "
+        line_info += f"<span style='color:#01579B; font-weight:bold;'>Angle:</span> {angle_deg:.1f}°"
+        
+        self.info_panel.setText(line_info)
+    
+    def _create_line_from_properties(self):
+        """根据属性面板中的设置创建新的线段"""
+        properties = self.line_properties_panel.get_properties()
+        
+        # 计算坐标系中的实际位置
+        center_x = self.canvas.width() // 2
+        center_y = self.canvas.height() // 2
+        grid_spacing = self.canvas.grid_spacing or 1
+        
+        # 计算线段的起点和终点
+        x1 = center_x + properties['x1'] * grid_spacing
+        y1 = center_y - properties['y1'] * grid_spacing  # 反转Y轴，符合数学坐标系
+        x2 = center_x + properties['x2'] * grid_spacing
+        y2 = center_y - properties['y2'] * grid_spacing  # 反转Y轴，符合数学坐标系
+        
+        # 添加起点
+        self.canvas.points.append({'x': x1, 'y': y1, 'color': "#0277BD"})
+        
+        # 添加终点
+        self.canvas.points.append({'x': x2, 'y': y2, 'color': "#0277BD"})
+        
+        # 计算线段长度
+        length = ((x2 - x1) ** 2 + (y1 - y2) ** 2) ** 0.5  # 注意y轴方向是相反的
+        real_length = length / grid_spacing
+        length_text = f"{real_length:.1f}"
+        
+        # 添加线段
+        self.canvas.lines.append({
+            'x1': x1, 'y1': y1,
+            'x2': x2, 'y2': y2,
+            'color': "#0277BD"
+        })
+        
+        # 添加长度文本
+        self.canvas.line_texts.append(length_text)
+        
+        # 更新画布
+        self.canvas.update()
+        
+        # 计算角度（弧度）
+        angle_rad = math.atan2(y1 - y2, x2 - x1)  # 注意y轴向下为正，需要反转
+        # 转换为度数 (0-360°)
+        angle_deg = (angle_rad * 180 / math.pi) % 360
+        
+        # 更新信息面板
+        line_info = f"<span style='background-color:#E3F2FD; border:1px solid #BBDEFB; border-radius:3px; padding:1px 4px; margin-right:5px;'>"
+        line_info += f"<b style='color:#0277BD; font-size:11pt;'>Ligne</b></span> "
+        line_info += f"({properties['x1']:.2f}, {properties['y1']:.2f}) → ({properties['x2']:.2f}, {properties['y2']:.2f}) | "
+        line_info += f"<span style='color:#01579B; font-weight:bold;'>Longueur:</span> {real_length:.2f} | "
+        line_info += f"<span style='color:#01579B; font-weight:bold;'>Angle:</span> {angle_deg:.1f}°"
+        
+        self.info_panel.setText(line_info)
