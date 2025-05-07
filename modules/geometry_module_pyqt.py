@@ -1932,7 +1932,8 @@ class GeometryModule(BaseModule):
         self.line_properties_panel.create_button.clicked.connect(self._create_line_from_properties)
         # 连接三角形属性面板的创建按钮信号
         self.triangle_properties_panel.create_button.clicked.connect(self._create_triangle_from_properties)
-        
+        # 连接圆形属性面板的创建按钮信号
+        self.circle_properties_panel.create_button.clicked.connect(self._create_circle_from_properties)
         # 属性面板是否启用的状态标记
         self.properties_enabled = False
         
@@ -2693,6 +2694,99 @@ class GeometryModule(BaseModule):
             properties['length'] * properties['width']
         )
     
+    def _preview_circle_from_properties(self):
+        """根据属性面板中的设置预览圆形"""
+        if not self.properties_enabled:
+            return
+            
+        properties = self.circle_properties_panel.get_properties()
+        
+        # 计算坐标系中的实际位置
+        center_x = self.canvas.width() // 2
+        center_y = self.canvas.height() // 2
+        grid_spacing = self.canvas.grid_spacing or 1
+        
+        x = center_x + properties['x'] * grid_spacing
+        y = center_y - properties['y'] * grid_spacing  # 反转Y轴，符合数学坐标系
+        
+        # 计算圆的半径
+        radius_px = properties['radius'] * grid_spacing
+        
+        # 存储预览信息
+        self.preview_shape = {
+            'type': 'circle',
+            'center': (x, y),
+            'radius': radius_px
+        }
+        
+        # 设置特殊预览模式标识
+        self.canvas.current_shape = "circle_preview"
+        # 设置临时状态用于预览显示
+        self.canvas.line_start_point = (x, y)  # 圆心
+        self.canvas.temp_shape = (x + radius_px, y)  # 圆上一点，用于确定半径
+        
+        # 更新画布
+        self.canvas.update()
+        
+        # 计算面积
+        area = math.pi * (properties['radius'] ** 2)
+        circumference = 2 * math.pi * properties['radius']
+        
+        # 更新信息面板
+        circle_info = f"<span style='background-color:#E8F5E9; border:1px solid #A5D6A7; border-radius:3px; padding:1px 4px; margin-right:5px;'>"
+        circle_info += f"<b style='color:#1B5E20; font-size:11pt;'>Cercle</b></span> "
+        circle_info += f"<span style='color:#1B5E20; font-weight:bold;'>Centre:</span> ({properties['x']:.2f}, {properties['y']:.2f}) | "
+        circle_info += f"<span style='color:#1B5E20; font-weight:bold;'>Rayon:</span> {properties['radius']:.2f} | "
+        circle_info += f"<span style='color:#1B5E20; font-weight:bold;'>Aire:</span> {area:.2f} | "
+        circle_info += f"<span style='color:#1B5E20; font-weight:bold;'>Circonférence:</span> {circumference:.2f}"
+        
+        self.info_panel.setText(circle_info)
+    
+    def _create_circle_from_properties(self):
+        """根据属性面板中的设置创建新的圆形"""
+        properties = self.circle_properties_panel.get_properties()
+        
+        # 计算坐标系中的实际位置
+        center_x = self.canvas.width() // 2
+        center_y = self.canvas.height() // 2
+        grid_spacing = self.canvas.grid_spacing or 1
+        
+        x = center_x + properties['x'] * grid_spacing
+        y = center_y - properties['y'] * grid_spacing  # 反转Y轴，符合数学坐标系
+        
+        # 计算圆的半径（像素）
+        radius_px = properties['radius'] * grid_spacing
+        
+        # 添加圆心作为一个点
+        self.canvas.points.append({
+            'x': x,
+            'y': y,
+            'color': "#1B5E20"  # 深绿色
+        })
+        
+        # 计算圆的属性
+        circumference = 2 * math.pi * properties['radius']
+        area = math.pi * (properties['radius'] ** 2)
+        
+        # 存储到形状属性中
+        self.canvas.shapes.append({
+            'type': 'circle',
+            'center': (x, y),
+            'radius': radius_px,
+            'circumference': circumference * grid_spacing,
+            'area': area * (grid_spacing ** 2),
+            'color': "#1B5E20"
+        })
+        
+        # 更新画布
+        self.canvas.update()
+        
+        # 更新信息面板
+        self.update_circle_info_complete(
+            properties['radius'], 
+            area
+        )
+
     def _preview_point_from_properties(self):
         """根据属性面板中的设置预览点"""
         if not self.properties_enabled:
