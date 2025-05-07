@@ -63,7 +63,7 @@ black .
 flake8
 
 # 安装开发依赖
-pip install -r requirements-dev.txt
+pip install -r requirements.txt
 ```
 
 ### 可选参数
