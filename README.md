@@ -1,16 +1,53 @@
-# 🧠 Logiciel de Géométrie & Calcul pour Enfants
+# 🧠 儿童几何与计算学习软件
 
-一个面向小学阶段的几何与计算软件，支持眼动控制和实时反馈。前期实现基础功能，后期无缝升级眼动追踪！
+一个面向小学阶段儿童的几何与计算学习软件，采用PyQt6开发，支持眼动控制和实时反馈。为儿童提供友好的交互界面，帮助他们掌握基础几何知识和数学计算技能。
+
+## ✨ 项目亮点
+
+- **直观交互**: 精心设计的界面适合儿童使用，色彩丰富、操作简单
+- **教育价值**: 通过视觉化方式帮助理解抽象数学概念
+- **多模态输入**: 支持传统鼠标/键盘控制，预留眼动追踪接口
+- **即时反馈**: 操作结果实时呈现，强化学习效果
+- **扩展性强**: 模块化设计，便于未来功能扩展
 
 ## 📦 功能模块
 
-- **几何绘图**：绘制点、线段、圆、三角形，支持基础属性标注。
-- **运算工具**：执行基础加减乘除，支持分数运算。
-- **眼动追踪**：预留接口，支持未来接入 MediaPipe 或 Tobii Eye Tracker 5。
-- **交互反馈**：成功/错误消息框，支持语音反馈（未来扩展）。
-- **工具库**：包括数值检查、几何计算等常用工具函数。
+### 几何绘图模块
+- 绘制基础几何图形：点、线段、圆、三角形
+- 测量图形属性：长度、角度、面积
+- 支持图形变换：旋转、缩放、移动
 
-## 🚀 快速启动
+### 计算工具模块
+- 基础四则运算：加、减、乘、除
+- 分数运算支持
+- 直观的计算过程展示
+
+### 眼动追踪接口（预留）
+- 支持MediaPipe眼动追踪集成
+- 兼容Tobii Eye Tracker 5等专业设备
+- 提供可定制的眼控交互模式
+
+### 反馈系统
+- 视觉反馈：颜色变化、动画效果
+- 声音反馈：操作提示音
+- 成功/错误消息提示框
+
+## 🛠️ 技术特性
+
+- **前端框架**: PyQt6
+- **图形处理**: OpenCV、Pillow
+- **数学计算**: NumPy
+- **眼动技术**: MediaPipe（预留接口）
+- **语音反馈**: pyttsx3
+
+## 🚀 快速开始
+
+### 系统要求
+- Python 3.8+
+- 建议使用虚拟环境
+- 支持Windows、macOS和Linux
+
+### 安装步骤
 
 1. 克隆仓库：
 
@@ -19,42 +56,62 @@ git clone https://github.com/nicrain/geometry_calc_app.git
 cd geometry_calc_app
 ```
 
-2. 安装依赖：
+2. 创建并激活虚拟环境（推荐）：
 
 ```bash
-# 创建虚拟环境（可选但推荐）
-python -m venv venv
+# 创建虚拟环境
+python -m venv .venv
 
-# 在 macOS/Linux 上激活虚拟环境
-source venv/bin/activate
+# 激活虚拟环境 (macOS/Linux)
+source .venv/bin/activate
 
-# 在 Windows 上激活虚拟环境
+# 激活虚拟环境 (Windows)
 # venv\Scripts\activate
+```
 
-# 安装所有依赖
+3. 安装依赖：
+
+```bash
 pip install -r requirements.txt
 ```
 
-3. 运行程序：
+4. 运行程序：
+
+```bash
+python main.py
+```
+
+### 运行选项
+
+程序支持以下命令行参数：
 
 ```bash
 # 基础运行
 python main.py
 
-# 调试模式（显示更详细的日志）
+# 调试模式
 python main.py --debug
 
-# 指定语言（如果支持）
+# 指定窗口大小
+python main.py --width 1280 --height 800
+
+# 禁用动画效果（适用于低性能设备）
+python main.py --no-animations
+
+# 指定语言（如支持）
 python main.py --lang fr
+
+# 查看帮助信息
+python main.py --help
 ```
 
-## 💻 详细命令说明
+## 💻 开发指南
 
-### 开发者工具
+### 开发环境设置
 
 ```bash
-# 运行所有测试
-pytest
+# 安装所有开发依赖
+pip install -r requirements.txt
 
 # 代码格式化
 black .
@@ -62,26 +119,11 @@ black .
 # 检查代码质量
 flake8
 
-# 安装开发依赖
-pip install -r requirements.txt
+# 运行测试
+pytest
 ```
 
-### 可选参数
-
-程序支持以下命令行参数：
-
-```bash
-# 指定窗口大小
-python main.py --width 1280 --height 800
-
-# 禁用动画效果（性能较低的设备）
-python main.py --no-animations
-
-# 帮助信息
-python main.py --help
-```
-
-## 📂 项目结构
+### 项目结构
 
 ```
 📂 geometry_calc_app/
@@ -90,17 +132,33 @@ python main.py --help
 │   ├── calculator_module_pyqt.py  # 运算模块
 │   ├── ui_components_pyqt.py      # UI组件模块
 │   └── eye_tracker_module.py      # 眼动追踪模块（预留接口）
+├── 📂 tests/                      # 测试目录
+│   ├── test_geometry.py           # 几何模块测试
+│   └── test_calculator.py         # 计算器模块测试
+├── 📂 docs/                       # 文档目录
+│   └── 📂 images/                 # 截图和图示
+├── 📂 resources/                  # 资源文件（图标、音效等）
 ├── main.py                        # 主程序入口
 ├── requirements.txt               # 依赖包列表
 └── README.md                      # 项目说明文件
 ```
 
-## 🛠️ 未来扩展
 
-- **更复杂的图形**：支持梯形、多边形、面积/周长计算。
-- **眼动追踪集成**：支持 MediaPipe 眼控、Tobii Eye Tracker 5。
-- **多语言支持**：添加英语/法语界面切换。
+## 🔮 未来规划
+
+- **更多几何图形**: 支持梯形、多边形等复杂图形
+- **高级计算功能**: 方程求解、简易统计功能
+- **眼动追踪集成**: 完整支持眼控操作
+- **多语言支持**: 中文、英语、法语界面切换
+- **教学模式**: 添加引导式学习功能
+- **游戏化元素**: 融入数学挑战任务和奖励机制
 
 ## 📄 许可证
 
 MIT License
+
+---
+
+<p align="center">
+    <i>为儿童打造的数学学习之旅</i>
+</p>
