@@ -1610,65 +1610,87 @@ class SimpleTrianglePropertiesPanel(QFrame):
         properties_layout.setVerticalSpacing(10)
         properties_layout.setHorizontalSpacing(8)
         
+        # 创建更紧凑的布局
         # 第一个顶点 (A)
-        properties_layout.addWidget(QLabel("Point A:"), 0, 0)
-        properties_layout.addWidget(QLabel("X1:"), 1, 0)
+        point_a_label = QLabel("Point A:")
+        point_a_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        properties_layout.addWidget(point_a_label, 0, 0, 2, 1)  # 占据两行高度
+        
+        x1_label = QLabel("X: ")
+        x1_label.setFixedWidth(25)  # 增加标签宽度
+        properties_layout.addWidget(x1_label, 0, 1)
+        
         self.x1_spin = QDoubleSpinBox()
         self.x1_spin.setRange(-50.0, 50.0)
         self.x1_spin.setSingleStep(0.5)
         self.x1_spin.setValue(-2.0)
-        properties_layout.addWidget(self.x1_spin, 1, 1)
+        self.x1_spin.setFixedWidth(80)  # 增加输入框宽度
+        properties_layout.addWidget(self.x1_spin, 0, 2)
         
-        properties_layout.addWidget(QLabel("Y1:"), 2, 0)
+        y1_label = QLabel("Y: ")
+        y1_label.setFixedWidth(25)  # 增加标签宽度
+        properties_layout.addWidget(y1_label, 1, 1)
+        
         self.y1_spin = QDoubleSpinBox()
         self.y1_spin.setRange(-50.0, 50.0)
         self.y1_spin.setSingleStep(0.5)
         self.y1_spin.setValue(-2.0)
-        properties_layout.addWidget(self.y1_spin, 2, 1)
+        self.y1_spin.setFixedWidth(80)  # 增加输入框宽度
+        properties_layout.addWidget(self.y1_spin, 1, 2)
         
         # 第二个顶点 (B)
-        properties_layout.addWidget(QLabel("Point B:"), 3, 0)
-        properties_layout.addWidget(QLabel("X2:"), 4, 0)
+        point_b_label = QLabel("Point B:")
+        point_b_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        properties_layout.addWidget(point_b_label, 2, 0, 2, 1)  # 占据两行高度
+        
+        x2_label = QLabel("X: ")
+        x2_label.setFixedWidth(25)  # 增加标签宽度
+        properties_layout.addWidget(x2_label, 2, 1)
+        
         self.x2_spin = QDoubleSpinBox()
         self.x2_spin.setRange(-50.0, 50.0)
         self.x2_spin.setSingleStep(0.5)
         self.x2_spin.setValue(2.0)
-        properties_layout.addWidget(self.x2_spin, 4, 1)
+        self.x2_spin.setFixedWidth(80)  # 增加输入框宽度
+        properties_layout.addWidget(self.x2_spin, 2, 2)
         
-        properties_layout.addWidget(QLabel("Y2:"), 5, 0)
+        y2_label = QLabel("Y: ")
+        y2_label.setFixedWidth(25)  # 增加标签宽度
+        properties_layout.addWidget(y2_label, 3, 1)
+        
         self.y2_spin = QDoubleSpinBox()
         self.y2_spin.setRange(-50.0, 50.0)
         self.y2_spin.setSingleStep(0.5)
         self.y2_spin.setValue(-2.0)
-        properties_layout.addWidget(self.y2_spin, 5, 1)
+        self.y2_spin.setFixedWidth(80)  # 增加输入框宽度
+        properties_layout.addWidget(self.y2_spin, 3, 2)
         
         # 第三个顶点 (C)
-        properties_layout.addWidget(QLabel("Point C:"), 6, 0)
-        properties_layout.addWidget(QLabel("X3:"), 7, 0)
+        point_c_label = QLabel("Point C:")
+        point_c_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        properties_layout.addWidget(point_c_label, 4, 0, 2, 1)  # 占据两行高度
+        
+        x3_label = QLabel("X: ")
+        x3_label.setFixedWidth(25)  # 增加标签宽度
+        properties_layout.addWidget(x3_label, 4, 1)
+        
         self.x3_spin = QDoubleSpinBox()
         self.x3_spin.setRange(-50.0, 50.0)
         self.x3_spin.setSingleStep(0.5)
         self.x3_spin.setValue(0.0)
-        properties_layout.addWidget(self.x3_spin, 7, 1)
+        self.x3_spin.setFixedWidth(80)  # 增加输入框宽度
+        properties_layout.addWidget(self.x3_spin, 4, 2)
         
-        properties_layout.addWidget(QLabel("Y3:"), 8, 0)
+        y3_label = QLabel("Y: ")
+        y3_label.setFixedWidth(25)  # 增加标签宽度
+        properties_layout.addWidget(y3_label, 5, 1)
+        
         self.y3_spin = QDoubleSpinBox()
         self.y3_spin.setRange(-50.0, 50.0)
         self.y3_spin.setSingleStep(0.5)
         self.y3_spin.setValue(2.0)
-        properties_layout.addWidget(self.y3_spin, 8, 1)
-        
-        # 三角形的边长显示（只读）
-        properties_layout.addWidget(QLabel("Côtés:"), 9, 0)
-        self.sides_label = QLabel("AB: 4.0, BC: 4.0, CA: 4.0")
-        self.sides_label.setStyleSheet("color: #4527A0; background-color: #F3E5F5; padding: 2px 5px; border-radius: 2px;")
-        properties_layout.addWidget(self.sides_label, 9, 1)
-        
-        # 周长显示（只读）
-        properties_layout.addWidget(QLabel("Périmètre:"), 10, 0)
-        self.perimeter_label = QLabel("12.0 cm")
-        self.perimeter_label.setStyleSheet("color: #4527A0; background-color: #F3E5F5; padding: 2px 5px; border-radius: 2px;")
-        properties_layout.addWidget(self.perimeter_label, 10, 1)
+        self.y3_spin.setFixedWidth(80)  # 增加输入框宽度
+        properties_layout.addWidget(self.y3_spin, 5, 2)
         
         layout.addLayout(properties_layout)
         
@@ -1710,27 +1732,9 @@ class SimpleTrianglePropertiesPanel(QFrame):
         self._update_triangle_properties()
     
     def _update_triangle_properties(self):
-        """更新三角形的边长和周长显示"""
-        x1 = self.x1_spin.value()
-        y1 = self.y1_spin.value()
-        x2 = self.x2_spin.value()
-        y2 = self.y2_spin.value()
-        x3 = self.x3_spin.value()
-        y3 = self.y3_spin.value()
-        
-        # 计算三边长度
-        side_ab = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
-        side_bc = ((x3 - x2) ** 2 + (y3 - y2) ** 2) ** 0.5
-        side_ca = ((x1 - x3) ** 2 + (y1 - y3) ** 2) ** 0.5
-        
-        # 计算周长
-        perimeter = side_ab + side_bc + side_ca
-        
-        # 更新边长显示
-        self.sides_label.setText(f"AB: {side_ab:.2f}, BC: {side_bc:.2f}, CA: {side_ca:.2f}")
-        
-        # 更新周长显示
-        self.perimeter_label.setText(f"{perimeter:.2f} cm")
+        """更新三角形的属性计算（已移除边长和周长显示）"""
+        # 保留方法以便将来扩展，但移除对已删除UI元素的引用
+        pass
     
     def get_properties(self):
         """获取当前设置的属性"""

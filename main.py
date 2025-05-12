@@ -22,7 +22,7 @@ try:
     os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = plugins_path
     
     # 记录环境设置 - 方便调试
-    print(f"Qt插件路径: {plugins_path}")
+    # print(f"Qt插件路径: {plugins_path}")
     
     # 导入应用程序自定义模块
     try:
