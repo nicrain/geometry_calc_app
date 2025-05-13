@@ -2,6 +2,6 @@
 **/__pycache__/
 deposer/
 .venv/
-.DS_Store/
+.DS_Store
 .temp/
 txt.md
