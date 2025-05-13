@@ -1,115 +1,131 @@
-import sys
-from pathlib import Path
-
-# 获取项目根目录
-PROJECT_ROOT = Path(__file__).parent.parent.absolute()
-
-# 导入PyQt6模块
-from PyQt6.QtWidgets import (QWidget, QPushButton, QGraphicsDropShadowEffect)
-from PyQt6.QtCore import Qt
+"""
+UI组件模块 - 提供通用界面组件
+"""
+from PyQt6.QtWidgets import (QWidget, QPushButton, QFrame, QVBoxLayout, 
+                             QGraphicsDropShadowEffect)
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont, QColor
 
-# 颜色映射表 - 集中管理应用的颜色方案
+# 颜色映射 - 用于组件样式
 COLOR_MAP = {
-    # 基础颜色
-    "#1B5E20": {"lighter": "#2E7D32", "darker": "#0F4C12", "name": "深墨绿色"},  
-    "#1A237E": {"lighter": "#283593", "darker": "#0D1642", "name": "深靛蓝色"},  
-    "#311B92": {"lighter": "#4527A0", "darker": "#1A0F4C", "name": "深紫色"},  
-    "#B71C1C": {"lighter": "#D32F2F", "darker": "#7F1414", "name": "深红色"},  
-    "#757575": {"lighter": "#9E9E9E", "darker": "#424242", "name": "灰色"},  
-    "#FF5722": {"lighter": "#FF7043", "darker": "#E64A19", "name": "橙色"},
-    "#E65100": {"lighter": "#EF6C00", "darker": "#BF360C", "name": "深橙色"},
-    "#0277BD": {"lighter": "#0288D1", "darker": "#01579B", "name": "蓝色"}
+    'primary': '#1976D2',
+    'secondary': '#424242',
+    'success': '#4CAF50',
+    'danger': '#F44336',
+    'warning': '#FFC107',
+    'info': '#2196F3',
+    'light': '#F5F5F5',
+    'dark': '#212121',
 }
 
-def generate_button_style(bg_color, fg_color, is_active=False):
-    """生成按钮样式表，避免重复代码
-    
-    Args:
-        bg_color: 背景颜色
-        fg_color: 前景(文字)颜色
-        is_active: 是否处于活动状态
-    
-    Returns:
-        生成的样式表字符串
-    """
-    # 确定要使用的背景颜色
-    if is_active:
-        bg = COLOR_MAP.get(bg_color, {}).get("lighter", bg_color)
-    else:
-        bg = bg_color
-        
-    hover_bg = COLOR_MAP.get(bg_color, {}).get("lighter", bg_color)
-    pressed_bg = COLOR_MAP.get(bg_color, {}).get("darker", bg_color)
-    
-    return f"""
-        QPushButton {{
-            background-color: {bg};
-            color: {fg_color};
-            border: none;
-            border-radius: 6px;
-            padding: 10px;
-            text-align: center;
-            font-weight: bold;
-        }}
-        QPushButton:hover {{
-            background-color: {hover_bg};
-        }}
-        QPushButton:pressed {{
-            background-color: {pressed_bg};
-        }}
-    """
-
-class MetroButton(QPushButton):
-    """实现类似Communicator 5的Metro风格按钮"""
-    def __init__(self, text="", bg_color="#ffffff", fg_color="#000000", parent=None):
-        super().__init__(text, parent)
-        self.bg_color = bg_color
-        self.fg_color = fg_color
-        self.normal_bg = bg_color
-        self.hover_bg = self._lighten_color(bg_color)
-        self.pressed_bg = self._darken_color(bg_color)
-        
-        # 设置样式
-        self.setStyleSheet(generate_button_style(bg_color, fg_color))
-        
-        # 设置阴影效果
-        self.setGraphicsEffect(None)  # 先清除任何现有效果
-        
-        # 设置最小尺寸
-        self.setMinimumSize(120, 36)
-        
-    def _lighten_color(self, color):
-        """使颜色变亮"""
-        return COLOR_MAP.get(color, {}).get("lighter", color)
-    
-    def _darken_color(self, color):
-        """使颜色变暗"""
-        return COLOR_MAP.get(color, {}).get("darker", color)
-    
-    def set_active(self, is_active=True):
-        """设置按钮的活动状态"""
-        self.setStyleSheet(generate_button_style(self.bg_color, self.fg_color, is_active))
-
 class BaseModule(QWidget):
-    """所有模块的基类"""
+    """基础模块类"""
+    
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.hide()  # 初始时隐藏
-        
+        self._setup_base_ui()
+    
+    def _setup_base_ui(self):
+        """设置基础UI"""
+        self.setContentsMargins(0, 0, 0, 0)
+    
     def show_module(self):
         """显示模块"""
         self.show()
-        
+    
     def hide_module(self):
         """隐藏模块"""
         self.hide()
+
+class MetroButton(QPushButton):
+    """Metro风格按钮"""
+    
+    def __init__(self, text, bg_color, text_color, parent=None):
+        super().__init__(text, parent)
+        self.bg_color = bg_color
+        self.text_color = text_color
+        self.active = False
+        self._setup_ui()
+    
+    def _setup_ui(self):
+        """设置UI样式"""
+        self.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {self.bg_color};
+                color: {self.text_color};
+                border: none;
+                border-radius: 4px;
+                padding: 8px 16px;
+                text-align: center;
+            }}
+            QPushButton:hover {{
+                background-color: {self._lighten_color(self.bg_color)};
+            }}
+            QPushButton:pressed {{
+                background-color: {self._darken_color(self.bg_color)};
+            }}
+        """)
         
-    def back_to_home(self):
-        """返回主页面的通用方法"""
-        parent = self.parent()
-        while parent:
-            if hasattr(parent, 'back_to_home'):
-                parent.back_to_home()
-                break
-            parent = parent.parent()
+        # 添加阴影效果
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(15)
+        shadow.setColor(QColor(0, 0, 0, 80))
+        shadow.setOffset(3, 3)
+        self.setGraphicsEffect(shadow)
+    
+    def _lighten_color(self, color, factor=0.2):
+        """使颜色变亮"""
+        if color.startswith('#'):
+            # 解析十六进制颜色
+            r = int(color[1:3], 16)
+            g = int(color[3:5], 16)
+            b = int(color[5:7], 16)
+            
+            # 使颜色变亮
+            r = min(255, int(r * (1 + factor)))
+            g = min(255, int(g * (1 + factor)))
+            b = min(255, int(b * (1 + factor)))
+            
+            # 返回十六进制颜色
+            return f"#{r:02x}{g:02x}{b:02x}"
+        return color
+    
+    def _darken_color(self, color, factor=0.2):
+        """使颜色变暗"""
+        if color.startswith('#'):
+            # 解析十六进制颜色
+            r = int(color[1:3], 16)
+            g = int(color[3:5], 16)
+            b = int(color[5:7], 16)
+            
+            # 使颜色变暗
+            r = max(0, int(r * (1 - factor)))
+            g = max(0, int(g * (1 - factor)))
+            b = max(0, int(b * (1 - factor)))
+            
+            # 返回十六进制颜色
+            return f"#{r:02x}{g:02x}{b:02x}"
+        return color
+    
+    def set_active(self, active):
+        """设置按钮的激活状态"""
+        self.active = active
+        if active:
+            self.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: {self._darken_color(self.bg_color)};
+                    color: {self.text_color};
+                    border: 2px solid {self.text_color};
+                    border-radius: 4px;
+                    padding: 8px 16px;
+                    text-align: center;
+                }}
+                QPushButton:hover {{
+                    background-color: {self.bg_color};
+                }}
+                QPushButton:pressed {{
+                    background-color: {self._darken_color(self.bg_color, 0.3)};
+                }}
+            """)
+        else:
+            self._setup_ui()

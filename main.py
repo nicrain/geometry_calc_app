@@ -21,14 +21,14 @@ try:
     plugins_path = QLibraryInfo.path(QLibraryInfo.LibraryPath.PluginsPath)
     os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = plugins_path
     
-    # 记录环境设置 - 方便调试
-    # print(f"Qt插件路径: {plugins_path}")
-    
     # 导入应用程序自定义模块
     try:
-        from modules.ui_components_pyqt import MetroButton
-        from modules.geometry_module_pyqt import GeometryModule
+        from modules.ui_components_pyqt import MetroButton, BaseModule
+        # 从重构后的几何模块导入GeometryModuleRefactored类
+        from modules.geometry_module_refactored import GeometryModuleRefactored
         from modules.calculator_module_pyqt import CalculatorModule
+        # 可以添加一个调试打印
+        print("模块导入成功")
     except ImportError as e:
         print(f"错误：无法导入应用程序模块: {e}")
         print("请确保modules目录存在且包含所需的.py文件")
@@ -75,8 +75,8 @@ class MainApp(QMainWindow):
         self.module_widget.hide()
         self.main_layout.addWidget(self.module_widget)
         
-        # 初始化模块
-        self.geometry_module = GeometryModule()
+        # 初始化模块 - 使用正确的类名
+        self.geometry_module = GeometryModuleRefactored()
         self.calculator_module = CalculatorModule()
         
         self.module_layout.addWidget(self.geometry_module)
@@ -142,10 +142,29 @@ class MainApp(QMainWindow):
 
 if __name__ == "__main__":
     try:
+        # 添加更多错误检查
+        if not os.path.exists(os.path.join(os.path.dirname(__file__), "modules")):
+            print("错误：modules目录不存在")
+            sys.exit(1)
+            
+        # 检查必要模块文件
+        required_modules = [
+            "ui_components_pyqt.py", 
+            "geometry_module_refactored.py",  # 更新为新模块名称
+            "calculator_module_pyqt.py"
+        ]
+        
+        for module in required_modules:
+            if not os.path.exists(os.path.join(os.path.dirname(__file__), "modules", module)):
+                print(f"错误：缺少必要模块文件 {module}")
+                sys.exit(1)
+                
         app = QApplication(sys.argv)
         window = MainApp()
         window.show()
         sys.exit(app.exec())
     except Exception as e:
         print(f"启动应用程序时出错: {str(e)}")
+        import traceback
+        traceback.print_exc()  # 打印详细错误信息
         sys.exit(1)
