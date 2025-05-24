@@ -137,10 +137,40 @@ class CircleHandler(ShapeHandler):
 
     def handle_mouse_move(self, x: float, y: float):
         """处理鼠标移动事件"""
-        if self.center_point:
-            screen_x, screen_y = self.canvas.grid_to_screen(x, y)
-            self.canvas.temp_shape = (screen_x, screen_y)
-            self.canvas.update()
+        if not self.center_point:
+            # 未点击圆心时，显示当前位置作为圆心
+            if hasattr(self.canvas, 'shape_preview'):
+                preview_data = {
+                    'type': 'circle_preview_start',
+                    'x': x, 'y': y
+                }
+                self.canvas.shape_preview.emit(preview_data)
+            return
+            
+        # 转换为屏幕坐标
+        screen_x, screen_y = self.canvas.grid_to_screen(x, y)
+        
+        # 设置临时形状
+        self.canvas.temp_shape = (screen_x, screen_y)
+        
+        # 发送实时圆形信息
+        if hasattr(self.canvas, 'shape_preview'):
+            center_x, center_y = self.center_point
+            grid_center_x, grid_center_y = self.canvas.screen_to_grid(center_x, center_y)
+            
+            # 计算半径
+            radius = math.sqrt((x - grid_center_x)**2 + (y - grid_center_y)**2)
+            area = math.pi * (radius ** 2)
+            
+            preview_data = {
+                'type': 'circle_preview',
+                'center_x': grid_center_x, 'center_y': grid_center_y,
+                'radius': radius,
+                'area': area
+            }
+            self.canvas.shape_preview.emit(preview_data)
+        
+        self.canvas.update()
 
     def handle_mouse_release(self, x: float, y: float):
         """处理鼠标释放事件"""

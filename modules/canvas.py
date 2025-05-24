@@ -269,8 +269,26 @@ class Canvas(QWidget):
                 center_x, center_y = self.line_start_point
                 temp_x, temp_y = self.temp_shape
                 radius = math.sqrt((temp_x - center_x)**2 + (temp_y - center_y)**2)
+                
+                # 绘制圆形（虚线）
                 painter.drawEllipse(int(center_x - radius), int(center_y - radius),
                                   int(radius * 2), int(radius * 2))
+                
+                # 绘制半径线（虚线）
+                painter.drawLine(int(center_x), int(center_y), int(temp_x), int(temp_y))
+                
+                # 计算实际半径
+                real_radius = radius / self.grid_spacing
+                
+                # 绘制半径标签
+                painter.setPen(QPen(QColor("#333333"), 1))
+                font = QFont("Arial", 9)
+                painter.setFont(font)
+                
+                # 在半径线的中点显示半径长度
+                mid_x = int((center_x + temp_x) / 2)
+                mid_y = int((center_y + temp_y) / 2)
+                painter.drawText(mid_x + 5, mid_y - 5, f"r={real_radius:.1f}")
             
             elif self.current_shape == "triangle" or self.current_shape == "triangle_preview":
                 # 绘制三角形预览

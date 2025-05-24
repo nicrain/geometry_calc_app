@@ -355,7 +355,24 @@ class GeometryModuleRefactored(BaseModule):
             info += f"<b>Largeur:</b> {width:.2f} | <b>Hauteur:</b> {height:.2f} | "
             info += f"<b>Aire:</b> {area:.2f}"
             self.info_panel.setText(info)
-
+        elif preview_data.get('type') == 'circle_preview_start':
+            # 显示圆心实时坐标
+            x = preview_data.get('x', 0)
+            y = preview_data.get('y', 0)
+            info = f"<b>Centre du cercle:</b> ({x:.2f}, {y:.2f})"
+            self.info_panel.setText(info)
+        elif preview_data.get('type') == 'circle_preview':
+            # 显示完整圆形信息
+            center_x = preview_data.get('center_x', 0)
+            center_y = preview_data.get('center_y', 0)
+            radius = preview_data.get('radius', 0)
+            area = preview_data.get('area', 0)
+            
+            info = f"<b>Cercle:</b> Centre({center_x:.2f}, {center_y:.2f}) | "
+            info += f"<b>Rayon:</b> {radius:.2f} | "
+            info += f"<b>Aire:</b> {area:.2f}"
+            self.info_panel.setText(info)
+    
     def update_coordinate_info(self, point_data: Dict[str, Any]):
         """更新坐标信息"""
         x = point_data.get('x', 0)
