@@ -54,7 +54,7 @@ class GeometryModuleRefactored(BaseModule):
         content_layout.addWidget(canvas_container)
         
         # 创建信息显示栏
-        self.info_panel = QLabel("坐标信息")
+        self.info_panel = QLabel("Informations de coordonnées")
         self.info_panel.setFont(QFont("Arial", 10))
         self.info_panel.setStyleSheet("""
             QLabel {
@@ -84,6 +84,7 @@ class GeometryModuleRefactored(BaseModule):
         self.canvas.mouse_position_changed.connect(self.update_mouse_position_info)
         self.canvas.point_created.connect(self.update_coordinate_info)
         self.canvas.shape_created.connect(self.update_shape_info)
+        self.canvas.shape_preview.connect(self.update_shape_preview_info)
         self.canvas.canvas_cleared.connect(self.reset_info_panel)
         
         # 初始化形状处理器和属性面板
@@ -93,6 +94,9 @@ class GeometryModuleRefactored(BaseModule):
         # 初始化当前活动的处理器和面板
         self.active_handler = None
         self.active_panel = None
+
+        # 关键：初始化时将canvas.shape_handler设为None
+        self.canvas.shape_handler = None
         
         # 创建属性面板开关按钮
         self.properties_button = MetroButton("Propriétés", "#030d03", "#FFFFFF")
@@ -231,6 +235,9 @@ class GeometryModuleRefactored(BaseModule):
         # 激活新的处理器
         handler.activate()
         self.active_handler = handler
+
+        # 关键：将当前handler赋值给canvas.shape_handler
+        self.canvas.shape_handler = handler
         
         # 显示属性面板（如果存在）
         if panel:
@@ -300,17 +307,40 @@ class GeometryModuleRefactored(BaseModule):
     
     def update_mouse_position_info(self, x: float, y: float):
         """更新鼠标位置信息"""
-        if not self.active_handler or self.active_handler.shape_type != ShapeType.POINT:
+        if not self.active_handler:
             return
         
-        # 显示鼠标当前坐标
-        self.info_panel.setText(f"<b>坐标:</b> ({x:.2f}, {y:.2f})")
-    
+        if self.active_handler.shape_type == ShapeType.POINT:
+            # 显示鼠标当前坐标
+            self.info_panel.setText(f"<b>Coordonnées:</b> ({x:.2f}, {y:.2f})")
+
+    def update_shape_preview_info(self, preview_data: Dict[str, Any]):
+        """更新形状预览信息"""
+        if preview_data.get('type') == 'line_preview_start':
+            # 显示线段起点实时坐标
+            x1 = preview_data.get('x1', 0)
+            y1 = preview_data.get('y1', 0)
+            info = f"<b>Point de départ:</b> ({x1:.2f}, {y1:.2f})"
+            self.info_panel.setText(info)
+            
+        elif preview_data.get('type') == 'line_preview':
+            # 显示完整线段信息
+            x1 = preview_data.get('x1', 0)
+            y1 = preview_data.get('y1', 0)
+            x2 = preview_data.get('x2', 0)
+            y2 = preview_data.get('y2', 0)
+            length = preview_data.get('length', 0)
+            angle = preview_data.get('angle', 0)
+            
+            info = f"<b>Ligne:</b> Début({x1:.2f}, {y1:.2f}) → Fin({x2:.2f}, {y2:.2f}) | "
+            info += f"<b>Longueur:</b> {length:.2f} | <b>Angle:</b> {angle:.1f}°"
+            self.info_panel.setText(info)
+
     def update_coordinate_info(self, point_data: Dict[str, Any]):
         """更新坐标信息"""
         x = point_data.get('x', 0)
         y = point_data.get('y', 0)
-        self.info_panel.setText(f"<b>点:</b> ({x:.2f}, {y:.2f})")
+        self.info_panel.setText(f"<b>Point:</b> ({x:.2f}, {y:.2f})")
     
     def update_shape_info(self, shape_data: Dict[str, Any]):
         """更新形状信息"""
@@ -324,8 +354,8 @@ class GeometryModuleRefactored(BaseModule):
             length = shape_data.get('length', 0)
             angle = shape_data.get('angle', 0)
             
-            info = f"<b>线段:</b> ({x1:.2f}, {y1:.2f}) → ({x2:.2f}, {y2:.2f}) | "
-            info += f"<b>长度:</b> {length:.2f} | <b>角度:</b> {angle:.1f}°"
+            info = f"<b>Ligne:</b> ({x1:.2f}, {y1:.2f}) → ({x2:.2f}, {y2:.2f}) | "
+            info += f"<b>Longueur:</b> {length:.2f} | <b>Angle:</b> {angle:.1f}°"
             self.info_panel.setText(info)
         
         elif shape_type == 'rectangle':
@@ -335,9 +365,9 @@ class GeometryModuleRefactored(BaseModule):
             height = shape_data.get('width', 0)
             area = shape_data.get('area', 0)
             
-            info = f"<b>矩形:</b> 左上角 ({x:.2f}, {y:.2f}) | "
-            info += f"<b>宽:</b> {width:.2f} | <b>高:</b> {height:.2f} | "
-            info += f"<b>面积:</b> {area:.2f}"
+            info = f"<b>Rectangle:</b> Coin sup. gauche ({x:.2f}, {y:.2f}) | "
+            info += f"<b>Largeur:</b> {width:.2f} | <b>Hauteur:</b> {height:.2f} | "
+            info += f"<b>Aire:</b> {area:.2f}"
             self.info_panel.setText(info)
         
         elif shape_type == 'circle':
@@ -346,9 +376,9 @@ class GeometryModuleRefactored(BaseModule):
             radius = shape_data.get('radius', 0)
             
             import math
-            info = f"<b>圆:</b> 圆心 ({x:.2f}, {y:.2f}) | "
-            info += f"<b>半径:</b> {radius:.2f} | "
-            info += f"<b>面积:</b> {math.pi * radius * radius:.2f}"
+            info = f"<b>Cercle:</b> Centre ({x:.2f}, {y:.2f}) | "
+            info += f"<b>Rayon:</b> {radius:.2f} | "
+            info += f"<b>Aire:</b> {math.pi * radius * radius:.2f}"
             self.info_panel.setText(info)
         
         elif shape_type == 'triangle':
@@ -361,11 +391,11 @@ class GeometryModuleRefactored(BaseModule):
             sides = shape_data.get('sides', [0, 0, 0])
             perimeter = shape_data.get('perimeter', 0)
             
-            info = f"<b>三角形:</b> A({x1:.2f}, {y1:.2f}), B({x2:.2f}, {y2:.2f}), C({x3:.2f}, {y3:.2f}) | "
-            info += f"<b>边长:</b> {sides[0]:.2f}, {sides[1]:.2f}, {sides[2]:.2f} | "
-            info += f"<b>周长:</b> {perimeter:.2f}"
+            info = f"<b>Triangle:</b> A({x1:.2f}, {y1:.2f}), B({x2:.2f}, {y2:.2f}), C({x3:.2f}, {y3:.2f}) | "
+            info += f"<b>Côtés:</b> {sides[0]:.2f}, {sides[1]:.2f}, {sides[2]:.2f} | "
+            info += f"<b>Périmètre:</b> {perimeter:.2f}"
             self.info_panel.setText(info)
-    
+
     def reset_info_panel(self):
         """重置信息面板"""
-        self.info_panel.setText("坐标信息")
+        self.info_panel.setText("Informations de coordonnées")

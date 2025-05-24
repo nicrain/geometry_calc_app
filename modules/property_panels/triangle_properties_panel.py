@@ -31,75 +31,86 @@ class TrianglePropertiesPanel(PropertyPanel):
     
     def _create_controls(self):
         """创建控件"""
-        # 创建更紧凑的布局
-        # 第一个顶点 (A)
-        self.properties_layout.addWidget(QLabel("点 A:"), 0, 0)
+        # 创建更紧凑的布局 - 三列：点标签、坐标标签、输入框
+        # 第一个顶点 (A) - 占两行
+        self.properties_layout.addWidget(QLabel("Point A"), 0, 0, 2, 1)  # 跨2行
         
         # X1坐标
-        self.properties_layout.addWidget(QLabel("X:"), 1, 0)
+        self.properties_layout.addWidget(QLabel("X:"), 0, 1)
         self.x1_spin = QDoubleSpinBox()
         self.x1_spin.setRange(-50.0, 50.0)
         self.x1_spin.setSingleStep(0.5)
         self.x1_spin.setValue(-2.0)
-        self.properties_layout.addWidget(self.x1_spin, 1, 1)
+        self.x1_spin.setMaximumWidth(80)  # 压缩输入框宽度
+        self.properties_layout.addWidget(self.x1_spin, 0, 2)
         
         # Y1坐标
-        self.properties_layout.addWidget(QLabel("Y:"), 2, 0)
+        self.properties_layout.addWidget(QLabel("Y:"), 1, 1)
         self.y1_spin = QDoubleSpinBox()
         self.y1_spin.setRange(-50.0, 50.0)
         self.y1_spin.setSingleStep(0.5)
         self.y1_spin.setValue(-2.0)
-        self.properties_layout.addWidget(self.y1_spin, 2, 1)
+        self.y1_spin.setMaximumWidth(80)  # 压缩输入框宽度
+        self.properties_layout.addWidget(self.y1_spin, 1, 2)
         
-        # 第二个顶点 (B)
-        self.properties_layout.addWidget(QLabel("点 B:"), 3, 0)
+        # 第二个顶点 (B) - 占两行
+        self.properties_layout.addWidget(QLabel("Point B"), 2, 0, 2, 1)  # 跨2行
         
         # X2坐标
-        self.properties_layout.addWidget(QLabel("X:"), 4, 0)
+        self.properties_layout.addWidget(QLabel("X:"), 2, 1)
         self.x2_spin = QDoubleSpinBox()
         self.x2_spin.setRange(-50.0, 50.0)
         self.x2_spin.setSingleStep(0.5)
         self.x2_spin.setValue(2.0)
-        self.properties_layout.addWidget(self.x2_spin, 4, 1)
+        self.x2_spin.setMaximumWidth(80)  # 压缩输入框宽度
+        self.properties_layout.addWidget(self.x2_spin, 2, 2)
         
         # Y2坐标
-        self.properties_layout.addWidget(QLabel("Y:"), 5, 0)
+        self.properties_layout.addWidget(QLabel("Y:"), 3, 1)
         self.y2_spin = QDoubleSpinBox()
         self.y2_spin.setRange(-50.0, 50.0)
         self.y2_spin.setSingleStep(0.5)
         self.y2_spin.setValue(-2.0)
-        self.properties_layout.addWidget(self.y2_spin, 5, 1)
+        self.y2_spin.setMaximumWidth(80)  # 压缩输入框宽度
+        self.properties_layout.addWidget(self.y2_spin, 3, 2)
         
-        # 第三个顶点 (C)
-        self.properties_layout.addWidget(QLabel("点 C:"), 6, 0)
+        # 第三个顶点 (C) - 占两行
+        self.properties_layout.addWidget(QLabel("Point C"), 4, 0, 2, 1)  # 跨2行
         
         # X3坐标
-        self.properties_layout.addWidget(QLabel("X:"), 7, 0)
+        self.properties_layout.addWidget(QLabel("X:"), 4, 1)
         self.x3_spin = QDoubleSpinBox()
         self.x3_spin.setRange(-50.0, 50.0)
         self.x3_spin.setSingleStep(0.5)
         self.x3_spin.setValue(0.0)
-        self.properties_layout.addWidget(self.x3_spin, 7, 1)
+        self.x3_spin.setMaximumWidth(80)  # 压缩输入框宽度
+        self.properties_layout.addWidget(self.x3_spin, 4, 2)
         
         # Y3坐标
-        self.properties_layout.addWidget(QLabel("Y:"), 8, 0)
+        self.properties_layout.addWidget(QLabel("Y:"), 5, 1)
         self.y3_spin = QDoubleSpinBox()
         self.y3_spin.setRange(-50.0, 50.0)
         self.y3_spin.setSingleStep(0.5)
         self.y3_spin.setValue(2.0)
-        self.properties_layout.addWidget(self.y3_spin, 8, 1)
+        self.y3_spin.setMaximumWidth(80)  # 压缩输入框宽度
+        self.properties_layout.addWidget(self.y3_spin, 5, 2)
         
-        # 周长显示（只读）
-        self.properties_layout.addWidget(QLabel("周长:"), 9, 0)
+        # 周长显示（只读）- 跨列显示
+        self.properties_layout.addWidget(QLabel("Périmètre:"), 6, 0)
         self.perimeter_label = QLabel("12.00 cm")
         self.perimeter_label.setStyleSheet("color: #311B92; background-color: #EDE7F6; padding: 2px 5px; border-radius: 2px;")
-        self.properties_layout.addWidget(self.perimeter_label, 9, 1)
+        self.properties_layout.addWidget(self.perimeter_label, 6, 1, 1, 2)  # 跨2列
         
-        # 面积显示（只读）
-        self.properties_layout.addWidget(QLabel("面积:"), 10, 0)
+        # 面积显示（只读）- 跨列显示
+        self.properties_layout.addWidget(QLabel("Surface:"), 7, 0)
         self.area_label = QLabel("8.00 cm²")
         self.area_label.setStyleSheet("color: #311B92; background-color: #EDE7F6; padding: 2px 5px; border-radius: 2px;")
-        self.properties_layout.addWidget(self.area_label, 10, 1)
+        self.properties_layout.addWidget(self.area_label, 7, 1, 1, 2)  # 跨2列
+        
+        # 设置列宽度比例
+        self.properties_layout.setColumnStretch(0, 1)  # 点标签列
+        self.properties_layout.setColumnStretch(1, 0)  # 坐标标签列 - 固定宽度
+        self.properties_layout.setColumnStretch(2, 1)  # 输入框列
         
         # 连接值变化信号
         self.x1_spin.valueChanged.connect(self._update_derived_values)
@@ -138,7 +149,7 @@ class TrianglePropertiesPanel(PropertyPanel):
             self.area_label.setText(f"{area:.2f} cm²")
         except ValueError:
             # 处理无法形成三角形的情况
-            self.area_label.setText("无效三角形")
+            self.area_label.setText("Triangle invalide")
         
         # 发送属性变化信号
         self._on_property_changed()

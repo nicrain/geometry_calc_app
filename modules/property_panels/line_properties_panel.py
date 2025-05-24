@@ -66,13 +66,13 @@ class LinePropertiesPanel(PropertyPanel):
         self.properties_layout.addWidget(self.y2_spin, 3, 1)
         
         # 长度显示（只读）
-        self.properties_layout.addWidget(QLabel("长:"), 4, 0)
+        self.properties_layout.addWidget(QLabel("Longueur:"), 4, 0)
         self.length_label = QLabel("4.47 cm")
         self.length_label.setStyleSheet("color: #01579B; background-color: #E1F5FE; padding: 2px 5px; border-radius: 2px;")
         self.properties_layout.addWidget(self.length_label, 4, 1)
         
         # 角度显示（只读）
-        self.properties_layout.addWidget(QLabel("角度:"), 5, 0)
+        self.properties_layout.addWidget(QLabel("Angle:"), 5, 0)
         self.angle_label = QLabel("45.0°")
         self.angle_label.setStyleSheet("color: #01579B; background-color: #E1F5FE; padding: 2px 5px; border-radius: 2px;")
         self.properties_layout.addWidget(self.angle_label, 5, 1)

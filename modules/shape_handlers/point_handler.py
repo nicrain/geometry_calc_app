@@ -26,14 +26,19 @@ class PointHandler(ShapeHandler):
         
     def _connect_canvas_events(self):
         """连接画布事件"""
-        # 在实际实现中可能需要连接特定事件
+        # 点处理器不需要特殊的事件连接
         pass
     
     def _disconnect_canvas_events(self):
         """断开画布事件连接"""
-        # 在实际实现中可能需要断开特定事件
+        # 点处理器不需要特殊的事件断开
         pass
-    
+
+    def activate(self):
+        """激活点处理器"""
+        super().activate()
+        self.canvas.draw_mode = "point"
+        
     def preview_from_properties(self, properties: Dict[str, Any]):
         """根据属性预览点"""
         if not self.is_active:

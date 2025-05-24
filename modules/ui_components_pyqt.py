@@ -111,21 +111,24 @@ class MetroButton(QPushButton):
         """设置按钮的激活状态"""
         self.active = active
         if active:
+            # 激活状态：使用更深的颜色
+            active_bg = self._darken_color(self.bg_color, 0.3)
             self.setStyleSheet(f"""
                 QPushButton {{
-                    background-color: {self._darken_color(self.bg_color)};
+                    background-color: {active_bg};
                     color: {self.text_color};
-                    border: 2px solid {self.text_color};
+                    border: 2px solid {self.bg_color};
                     border-radius: 4px;
                     padding: 8px 16px;
                     text-align: center;
                 }}
                 QPushButton:hover {{
-                    background-color: {self.bg_color};
+                    background-color: {self._lighten_color(active_bg)};
                 }}
                 QPushButton:pressed {{
-                    background-color: {self._darken_color(self.bg_color, 0.3)};
+                    background-color: {self._darken_color(active_bg)};
                 }}
             """)
         else:
+            # 非激活状态：恢复原样式
             self._setup_ui()

@@ -14,6 +14,7 @@ class Canvas(QWidget):
     point_created = pyqtSignal(dict)  # 传递点数据
     line_created = pyqtSignal(dict)  # 传递线段数据
     shape_created = pyqtSignal(dict)  # 传递形状数据
+    shape_preview = pyqtSignal(dict)  # 传递形状预览数据
     canvas_cleared = pyqtSignal()  # 画布清除信号
     
     def __init__(self, parent=None):
@@ -50,7 +51,15 @@ class Canvas(QWidget):
         
         # 启用鼠标跟踪
         self.setMouseTracking(True)
+
+        self.shape_handler = None  # 当前激活的形状处理器
+        self.draw_mode = None      # 当前绘制模式
+        self.current_shape = None  # 当前形状类型
     
+    def set_shape_handler(self, handler):
+        """设置当前形状处理器"""
+        self.shape_handler = handler
+
     def clear(self):
         """清除画布上的所有内容"""
         self.points = []
@@ -63,6 +72,8 @@ class Canvas(QWidget):
         self.line_start_point = None
         self.triangle_points = []
         self.selected_item = None
+        self.draw_mode = None  # 清除时也重置绘制模式
+        self.current_shape = None
         self.update()
         self.canvas_cleared.emit()
     
@@ -212,12 +223,56 @@ class Canvas(QWidget):
     
     def _draw_temp_shapes(self, painter):
         """绘制临时形状"""
-        # 根据不同的临时形状类型进行绘制
-        if not self.temp_shape:
+        if not self.temp_shape or not self.line_start_point:
             return
         
-        # 实现临时形状绘制逻辑
-        # ...
+        # 设置虚线样式和无填充
+        painter.setPen(QPen(QColor("#999999"), 1, Qt.PenStyle.DashLine))
+        painter.setBrush(Qt.BrushStyle.NoBrush)  # 确保无填充
+        
+        # 根据当前形状类型绘制临时预览
+        if hasattr(self, 'current_shape') and self.current_shape:
+            if self.current_shape in ["rectangle", "rectangle_preview"]:
+                # 绘制矩形预览
+                x1, y1 = self.line_start_point
+                x2, y2 = self.temp_shape
+                min_x, max_x = min(x1, x2), max(x1, x2)
+                min_y, max_y = min(y1, y2), max(y1, y2)
+                painter.drawRect(int(min_x), int(min_y), int(max_x - min_x), int(max_y - min_y))
+            
+            elif self.current_shape in ["circle", "circle_preview"]:
+                # 绘制圆形预览
+                center_x, center_y = self.line_start_point
+                temp_x, temp_y = self.temp_shape
+                radius = math.sqrt((temp_x - center_x)**2 + (temp_y - center_y)**2)
+                painter.drawEllipse(int(center_x - radius), int(center_y - radius),
+                                  int(radius * 2), int(radius * 2))
+            
+            elif self.current_shape in ["triangle", "triangle_preview"]:
+                # 绘制三角形预览
+                x1, y1 = self.line_start_point
+                temp_x, temp_y = self.temp_shape
+                
+                if self.triangle_points:
+                    # 有第二个点，绘制部分三角形
+                    x2, y2 = self.triangle_points[0]
+                    # 绘制已确定的边
+                    painter.setPen(QPen(QColor("#666666"), 2))
+                    painter.drawLine(int(x1), int(y1), int(x2), int(y2))
+                    
+                    # 绘制临时边
+                    painter.setPen(QPen(QColor("#999999"), 1, Qt.PenStyle.DashLine))
+                    painter.drawLine(int(x2), int(y2), int(temp_x), int(temp_y))
+                    painter.drawLine(int(temp_x), int(temp_y), int(x1), int(y1))
+                else:
+                    # 只绘制从第一个点到鼠标的线
+                    painter.drawLine(int(x1), int(y1), int(temp_x), int(temp_y))
+            
+            elif self.current_shape in ["line", "line_preview"] or self.current_shape is None:
+                # 默认绘制线段
+                x1, y1 = self.line_start_point
+                x2, y2 = self.temp_shape
+                painter.drawLine(int(x1), int(y1), int(x2), int(y2))
     
     def _draw_temp_point(self, painter):
         """绘制临时点"""
@@ -263,6 +318,10 @@ class Canvas(QWidget):
         # 发送鼠标位置变化信号
         self.mouse_position_changed.emit(grid_x, grid_y)
         
+        # 委托给当前形状处理器
+        if self.shape_handler and hasattr(self.shape_handler, "handle_mouse_move"):
+            self.shape_handler.handle_mouse_move(grid_x, grid_y)
+        
         # 调用父类方法
         super().mouseMoveEvent(event)
     
@@ -271,10 +330,11 @@ class Canvas(QWidget):
         if event.button() == Qt.MouseButton.LeftButton:
             self.start_x = event.position().x()
             self.start_y = event.position().y()
-            
-            # 更具体的处理逻辑将移到形状处理器中
-            # 这里仅保留基本框架
-            if self.draw_mode == "point":
+            grid_x, grid_y = self.screen_to_grid(self.start_x, self.start_y)
+            # 优先委托给当前形状处理器
+            if self.shape_handler and hasattr(self.shape_handler, "handle_mouse_press"):
+                self.shape_handler.handle_mouse_press(grid_x, grid_y)
+            elif self.draw_mode == "point":
                 # 添加一个点
                 new_point = {
                     'x': self.start_x,
@@ -284,7 +344,6 @@ class Canvas(QWidget):
                 self.points.append(new_point)
                 self.update()
                 # 发送点创建信号
-                grid_x, grid_y = self.screen_to_grid(self.start_x, self.start_y)
                 point_data = {'x': grid_x, 'y': grid_y, 'color': "#E65100"}
                 self.point_created.emit(point_data)
         
@@ -294,9 +353,12 @@ class Canvas(QWidget):
     def mouseReleaseEvent(self, event):
         """鼠标释放事件，用于完成形状的创建"""
         if event.button() == Qt.MouseButton.LeftButton:
-            # 具体逻辑将移到形状处理器中
-            # 这里仅保留基本框架
-            pass
+            x = event.position().x()
+            y = event.position().y()
+            grid_x, grid_y = self.screen_to_grid(x, y)
+            # 优先委托给当前形状处理器
+            if self.shape_handler and hasattr(self.shape_handler, "handle_mouse_release"):
+                self.shape_handler.handle_mouse_release(grid_x, grid_y)
         
         # 调用父类的mouseReleaseEvent
         super().mouseReleaseEvent(event)

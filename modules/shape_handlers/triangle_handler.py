@@ -32,11 +32,12 @@ class TriangleHandler(ShapeHandler):
     
     def _connect_canvas_events(self):
         """连接画布事件"""
-        # 在实际应用中，我们应该保存连接的引用以便稍后断开连接
+        # 三角形处理器的事件连接逻辑
         pass
     
     def _disconnect_canvas_events(self):
         """断开画布事件连接"""
+        # 三角形处理器的事件断开逻辑
         pass
     
     def preview_from_properties(self, properties: Dict[str, Any]):
@@ -175,24 +176,24 @@ class TriangleHandler(ShapeHandler):
     
     def handle_mouse_press(self, x: float, y: float):
         """处理鼠标按下事件"""
-        # 转换为屏幕坐标
         screen_x, screen_y = self.canvas.grid_to_screen(x, y)
         
         if len(self.vertices) == 0:
-            # 添加第一个点
+            # 第一个点
             self.vertices.append((screen_x, screen_y))
             self.canvas.line_start_point = (screen_x, screen_y)
-            self.canvas.points.append({
-                'x': screen_x, 'y': screen_y, 'color': self.color
-            })
+            self.canvas.current_shape = "triangle"  # 确保设置正确的形状类型
+            self.canvas.triangle_points = []
+            self.canvas.temp_shape = None
+            self.canvas.points.append({'x': screen_x, 'y': screen_y, 'color': self.color})
             self.canvas.update()
+            
         elif len(self.vertices) == 1:
-            # 添加第二个点
+            # 第二个点
             self.vertices.append((screen_x, screen_y))
-            self.canvas.triangle_points.append((screen_x, screen_y))
-            self.canvas.points.append({
-                'x': screen_x, 'y': screen_y, 'color': self.color
-            })
+            self.canvas.triangle_points = [(screen_x, screen_y)]
+            self.canvas.temp_shape = None
+            self.canvas.points.append({'x': screen_x, 'y': screen_y, 'color': self.color})
             
             # 创建第一条边
             x1, y1 = self.vertices[0]
@@ -201,15 +202,18 @@ class TriangleHandler(ShapeHandler):
                 'x2': screen_x, 'y2': screen_y, 
                 'color': self.color
             })
-            self.canvas.update()
-        elif len(self.vertices) == 2:
-            # 添加第三个点，完成三角形
-            self.vertices.append((screen_x, screen_y))
-            self.canvas.points.append({
-                'x': screen_x, 'y': screen_y, 'color': self.color
-            })
             
-            # 获取三个点的坐标
+            # 计算并添加第一条边的长度
+            side_length = math.sqrt((screen_x - x1)**2 + (screen_y - y1)**2) / self.canvas.grid_spacing
+            self.canvas.line_texts.append(f"{side_length:.1f}")
+            
+            self.canvas.update()
+            
+        elif len(self.vertices) == 2:
+            # 第三个点，完成三角形
+            self.vertices.append((screen_x, screen_y))
+            self.canvas.points.append({'x': screen_x, 'y': screen_y, 'color': self.color})
+            
             x1, y1 = self.vertices[0]
             x2, y2 = self.vertices[1]
             x3, y3 = screen_x, screen_y
@@ -226,42 +230,32 @@ class TriangleHandler(ShapeHandler):
                 'color': self.color
             })
             
-            # 计算三条边的长度
-            side1 = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
-            side2 = math.sqrt((x3 - x2)**2 + (y3 - y2)**2)
-            side3 = math.sqrt((x1 - x3)**2 + (y1 - y3)**2)
-            
-            # 转换为相对坐标系的长度
-            grid_spacing = self.canvas.grid_spacing
-            real_side1 = side1 / grid_spacing
-            real_side2 = side2 / grid_spacing
-            real_side3 = side3 / grid_spacing
+            # 计算边长
+            side2 = math.sqrt((x3 - x2)**2 + (y3 - y2)**2) / self.canvas.grid_spacing
+            side3 = math.sqrt((x1 - x3)**2 + (y1 - y3)**2) / self.canvas.grid_spacing
             
             # 添加边长文本
-            self.canvas.line_texts.append(f"{real_side1:.1f}")
-            self.canvas.line_texts.append(f"{real_side2:.1f}")
-            self.canvas.line_texts.append(f"{real_side3:.1f}")
+            self.canvas.line_texts.append(f"{side2:.1f}")
+            self.canvas.line_texts.append(f"{side3:.1f}")
             
-            # 计算三角形周长
+            # 计算所有边长（用于面积计算）
+            side1 = math.sqrt((x2 - x1)**2 + (y2 - y1)**2) / self.canvas.grid_spacing
+            
+            # 计算周长和面积
             perimeter = side1 + side2 + side3
-            real_perimeter = perimeter / grid_spacing
-            
-            # 计算三角形面积（使用海伦公式）
             s = perimeter / 2
             area = math.sqrt(s * (s - side1) * (s - side2) * (s - side3))
-            real_area = area / (grid_spacing ** 2)
             
-            # 存储到形状属性中
             self.canvas.shapes.append({
                 'type': 'triangle',
                 'vertices': [(x1, y1), (x2, y2), (x3, y3)],
-                'sides': [side1, side2, side3],
-                'area': area,
-                'perimeter': perimeter,
+                'sides': [side1 * self.canvas.grid_spacing, side2 * self.canvas.grid_spacing, side3 * self.canvas.grid_spacing],
+                'area': area * (self.canvas.grid_spacing ** 2),
+                'perimeter': perimeter * self.canvas.grid_spacing,
                 'color': self.color
             })
             
-            # 发送三角形创建信号
+            # 发射信号
             grid_x1, grid_y1 = self.canvas.screen_to_grid(x1, y1)
             grid_x2, grid_y2 = self.canvas.screen_to_grid(x2, y2)
             grid_x3, grid_y3 = self.canvas.screen_to_grid(x3, y3)
@@ -271,9 +265,9 @@ class TriangleHandler(ShapeHandler):
                 'x1': grid_x1, 'y1': grid_y1,
                 'x2': grid_x2, 'y2': grid_y2,
                 'x3': grid_x3, 'y3': grid_y3,
-                'sides': [real_side1, real_side2, real_side3],
-                'perimeter': real_perimeter,
-                'area': real_area,
+                'sides': [side1, side2, side3],
+                'perimeter': perimeter,
+                'area': area,
                 'color': self.color
             }
             self.canvas.shape_created.emit(triangle_data)
@@ -285,22 +279,33 @@ class TriangleHandler(ShapeHandler):
             self.canvas.temp_shape = None
             
             self.canvas.update()
-    
+
     def handle_mouse_move(self, x: float, y: float):
         """处理鼠标移动事件"""
-        if not self.vertices:
-            return
-            
-        # 转换为屏幕坐标
-        screen_x, screen_y = self.canvas.grid_to_screen(x, y)
-        
-        # 设置临时形状
-        self.canvas.temp_shape = (screen_x, screen_y)
-        
-        # 更新画布
-        self.canvas.update()
+        if len(self.vertices) > 0:
+            screen_x, screen_y = self.canvas.grid_to_screen(x, y)
+            self.canvas.temp_shape = (screen_x, screen_y)
+            self.canvas.update()
     
-    def handle_mouse_release(self, x: float, y: float):
-        """处理鼠标释放事件"""
-        # 三角形的逻辑已在press事件中处理
-        pass
+    def deactivate(self):
+        """停用三角形处理器"""
+        super().deactivate()
+        # 清除Canvas相关状态
+        self.canvas.line_start_point = None
+        self.canvas.temp_shape = None
+        self.canvas.current_shape = None
+        self.canvas.triangle_points = []
+        self.canvas.temp_endpoints = []
+        self.vertices = []
+    
+    def activate(self):
+        """激活三角形处理器"""
+        super().activate()
+        self.canvas.draw_mode = "triangle"
+        self.canvas.current_shape = "triangle"
+        # 确保清除之前的临时状态
+        self.vertices = []
+        self.canvas.line_start_point = None
+        self.canvas.temp_shape = None
+        self.canvas.triangle_points = []
+        self.canvas.temp_endpoints = []

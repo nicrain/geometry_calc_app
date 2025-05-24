@@ -46,6 +46,19 @@ class ShapeHandler(ABC):
         # 具体实现由子类提供
         pass
     
+    # 鼠标事件处理方法 - 子类可选择实现
+    def handle_mouse_press(self, x: float, y: float):
+        """处理鼠标按下事件"""
+        pass
+    
+    def handle_mouse_move(self, x: float, y: float):
+        """处理鼠标移动事件"""
+        pass
+    
+    def handle_mouse_release(self, x: float, y: float):
+        """处理鼠标释放事件"""
+        pass
+    
     @abstractmethod
     def _reset_canvas_state(self):
         """重置画布状态"""

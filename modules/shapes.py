@@ -9,11 +9,11 @@ from abc import ABC, abstractmethod
 
 class ShapeType(Enum):
     """几何形状类型枚举"""
-    POINT = 0
-    LINE = 1
-    RECTANGLE = 2
-    CIRCLE = 3
-    TRIANGLE = 4
+    POINT = auto()
+    LINE = auto()
+    CIRCLE = auto()
+    RECTANGLE = auto()
+    TRIANGLE = auto()
 
 @dataclass
 class Point:
