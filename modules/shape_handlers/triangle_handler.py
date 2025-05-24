@@ -282,11 +282,70 @@ class TriangleHandler(ShapeHandler):
 
     def handle_mouse_move(self, x: float, y: float):
         """处理鼠标移动事件"""
-        if len(self.vertices) > 0:
-            screen_x, screen_y = self.canvas.grid_to_screen(x, y)
-            self.canvas.temp_shape = (screen_x, screen_y)
-            self.canvas.update()
-    
+        if not self.vertices:
+            # 未点击第一点时，显示当前位置作为第一点
+            if hasattr(self.canvas, 'shape_preview'):
+                preview_data = {
+                    'type': 'triangle_preview_start',
+                    'x1': x, 'y1': y
+                }
+                self.canvas.shape_preview.emit(preview_data)
+            return
+            
+        # 转换为屏幕坐标
+        screen_x, screen_y = self.canvas.grid_to_screen(x, y)
+        
+        # 设置临时形状
+        self.canvas.temp_shape = (screen_x, screen_y)
+        
+        # 发送实时三角形信息
+        if hasattr(self.canvas, 'shape_preview'):
+            if len(self.vertices) == 1:
+                # 有一个点，显示第一条边的预览
+                x1, y1 = self.vertices[0]
+                grid_x1, grid_y1 = self.canvas.screen_to_grid(x1, y1)
+                
+                side1 = math.sqrt((x - grid_x1)**2 + (y - grid_y1)**2)
+                
+                preview_data = {
+                    'type': 'triangle_preview_side1',
+                    'x1': grid_x1, 'y1': grid_y1,
+                    'x2': x, 'y2': y,
+                    'side1': side1
+                }
+                self.canvas.shape_preview.emit(preview_data)
+                
+            elif len(self.vertices) == 2:
+                # 有两个点，显示完整三角形的预览
+                x1, y1 = self.vertices[0]
+                x2, y2 = self.vertices[1]
+                grid_x1, grid_y1 = self.canvas.screen_to_grid(x1, y1)
+                grid_x2, grid_y2 = self.canvas.screen_to_grid(x2, y2)
+                
+                # 计算三条边的长度
+                side1 = math.sqrt((grid_x2 - grid_x1)**2 + (grid_y2 - grid_y1)**2)
+                side2 = math.sqrt((x - grid_x2)**2 + (y - grid_y2)**2)
+                side3 = math.sqrt((grid_x1 - x)**2 + (grid_y1 - y)**2)
+                
+                # 计算面积（使用海伦公式）
+                s = (side1 + side2 + side3) / 2
+                area = 0
+                if s > side1 and s > side2 and s > side3:
+                    area = math.sqrt(s * (s - side1) * (s - side2) * (s - side3))
+                
+                preview_data = {
+                    'type': 'triangle_preview',
+                    'x1': grid_x1, 'y1': grid_y1,
+                    'x2': grid_x2, 'y2': grid_y2,
+                    'x3': x, 'y3': y,
+                    'sides': [side1, side2, side3],
+                    'area': area
+                }
+                self.canvas.shape_preview.emit(preview_data)
+        
+        # 更新画布
+        self.canvas.update()
+
     def deactivate(self):
         """停用三角形处理器"""
         super().deactivate()

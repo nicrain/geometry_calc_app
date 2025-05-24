@@ -295,20 +295,53 @@ class Canvas(QWidget):
                 x1, y1 = self.line_start_point
                 temp_x, temp_y = self.temp_shape
                 
+                # 如果有第二个点，绘制部分三角形
                 if self.triangle_points:
-                    # 有第二个点，绘制部分三角形
                     x2, y2 = self.triangle_points[0]
                     # 绘制已确定的边
                     painter.setPen(QPen(QColor("#666666"), 2))
                     painter.drawLine(int(x1), int(y1), int(x2), int(y2))
                     
+                    # 计算并显示第一条边的长度
+                    side1_length = math.sqrt((x2 - x1)**2 + (y2 - y1)**2) / self.grid_spacing
+                    mid_x1 = int((x1 + x2) / 2)
+                    mid_y1 = int((y1 + y2) / 2)
+                    painter.setPen(QPen(QColor("#333333"), 1))
+                    font = QFont("Arial", 9)
+                    painter.setFont(font)
+                    painter.drawText(mid_x1 + 5, mid_y1 - 5, f"{side1_length:.1f}")
+                    
                     # 绘制临时边
                     painter.setPen(QPen(QColor("#999999"), 1, Qt.PenStyle.DashLine))
                     painter.drawLine(int(x2), int(y2), int(temp_x), int(temp_y))
                     painter.drawLine(int(temp_x), int(temp_y), int(x1), int(y1))
+                    
+                    # 显示临时边的长度
+                    painter.setPen(QPen(QColor("#333333"), 1))
+                    
+                    # 第二条边长度
+                    side2_length = math.sqrt((temp_x - x2)**2 + (temp_y - y2)**2) / self.grid_spacing
+                    mid_x2 = int((x2 + temp_x) / 2)
+                    mid_y2 = int((y2 + temp_y) / 2)
+                    painter.drawText(mid_x2 + 5, mid_y2 - 5, f"{side2_length:.1f}")
+                    
+                    # 第三条边长度
+                    side3_length = math.sqrt((x1 - temp_x)**2 + (y1 - temp_y)**2) / self.grid_spacing
+                    mid_x3 = int((temp_x + x1) / 2)
+                    mid_y3 = int((temp_y + y1) / 2)
+                    painter.drawText(mid_x3 + 5, mid_y3 - 5, f"{side3_length:.1f}")
                 else:
                     # 只绘制从第一个点到鼠标的线
                     painter.drawLine(int(x1), int(y1), int(temp_x), int(temp_y))
+                    
+                    # 显示第一条边的长度
+                    side_length = math.sqrt((temp_x - x1)**2 + (temp_y - y1)**2) / self.grid_spacing
+                    mid_x = int((x1 + temp_x) / 2)
+                    mid_y = int((y1 + temp_y) / 2)
+                    painter.setPen(QPen(QColor("#333333"), 1))
+                    font = QFont("Arial", 9)
+                    painter.setFont(font)
+                    painter.drawText(mid_x + 5, mid_y - 5, f"{side_length:.1f}")
             
             else:
                 # 默认绘制线段

@@ -372,7 +372,42 @@ class GeometryModuleRefactored(BaseModule):
             info += f"<b>Rayon:</b> {radius:.2f} | "
             info += f"<b>Aire:</b> {area:.2f}"
             self.info_panel.setText(info)
-    
+        elif preview_data.get('type') == 'triangle_preview_start':
+            # 显示三角形第一点实时坐标
+            x1 = preview_data.get('x1', 0)
+            y1 = preview_data.get('y1', 0)
+            info = f"<b>Premier point:</b> A({x1:.2f}, {y1:.2f})"
+            self.info_panel.setText(info)
+            
+        elif preview_data.get('type') == 'triangle_preview_side1':
+            # 显示三角形第一条边信息
+            x1 = preview_data.get('x1', 0)
+            y1 = preview_data.get('y1', 0)
+            x2 = preview_data.get('x2', 0)
+            y2 = preview_data.get('y2', 0)
+            side1 = preview_data.get('side1', 0)
+            
+            info = f"<b>Triangle:</b> A({x1:.2f}, {y1:.2f}), B({x2:.2f}, {y2:.2f}) | "
+            info += f"<b>Côté AB:</b> {side1:.2f}"
+            self.info_panel.setText(info)
+            
+        elif preview_data.get('type') == 'triangle_preview':
+            # 显示完整三角形信息
+            x1 = preview_data.get('x1', 0)
+            y1 = preview_data.get('y1', 0)
+            x2 = preview_data.get('x2', 0)
+            y2 = preview_data.get('y2', 0)
+            x3 = preview_data.get('x3', 0)
+            y3 = preview_data.get('y3', 0)
+            sides = preview_data.get('sides', [0, 0, 0])
+            area = preview_data.get('area', 0)
+            perimeter = sum(sides)  # 计算周长
+            
+            info = f"<b>Triangle:</b> A({x1:.2f}, {y1:.2f}), B({x2:.2f}, {y2:.2f}), C({x3:.2f}, {y3:.2f}) | "
+            info += f"<b>Côtés:</b> {sides[0]:.2f}, {sides[1]:.2f}, {sides[2]:.2f} | "
+            info += f"<b>Périmètre:</b> {perimeter:.2f} | <b>Aire:</b> {area:.2f}"
+            self.info_panel.setText(info)
+
     def update_coordinate_info(self, point_data: Dict[str, Any]):
         """更新坐标信息"""
         x = point_data.get('x', 0)
@@ -427,10 +462,11 @@ class GeometryModuleRefactored(BaseModule):
             y3 = shape_data.get('y3', 0)
             sides = shape_data.get('sides', [0, 0, 0])
             perimeter = shape_data.get('perimeter', 0)
+            area = shape_data.get('area', 0)  # 获取面积数据
             
             info = f"<b>Triangle:</b> A({x1:.2f}, {y1:.2f}), B({x2:.2f}, {y2:.2f}), C({x3:.2f}, {y3:.2f}) | "
             info += f"<b>Côtés:</b> {sides[0]:.2f}, {sides[1]:.2f}, {sides[2]:.2f} | "
-            info += f"<b>Périmètre:</b> {perimeter:.2f}"
+            info += f"<b>Périmètre:</b> {perimeter:.2f} | <b>Aire:</b> {area:.2f}"
             self.info_panel.setText(info)
 
     def reset_info_panel(self):
