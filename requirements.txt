@@ -1,28 +1,56 @@
-# 核心依赖
-PyQt6>=6.5.0           # GUI 界面库
-numpy>=1.24.0          # 数学运算和几何计算
+# 核心依赖 - 当前代码实际使用 | Dépendances principales - Utilisées dans le code actuel
+PyQt6>=6.5.0           # GUI 界面库 - 项目的核心依赖 | Bibliothèque d'interface graphique - Dépendance principale du projet
 
-# 图像处理
-opencv-python>=4.7.0   # 图像处理，眼动追踪支持
-pillow>=9.5.0          # 图像处理库，用于图形元素
+# 开发和测试工具 | Outils de développement et de test
+pytest>=7.3.1          # 单元测试框架 | Framework de tests unitaires
+pytest-qt>=4.2.0       # Qt应用测试支持 | Support de test pour applications Qt
 
-# 眼动追踪相关
-mediapipe>=0.10.0      # 眼动追踪预留接口
+# 代码质量工具 | Outils de qualité de code
+black>=23.3.0          # 代码格式化 | Formatage de code
+flake8>=6.0.0          # 代码质量检查 | Vérification de la qualité du code
+isort>=5.12.0          # 导入语句排序 | Tri des déclarations d'importation
 
-# 用户交互增强
-pyttsx3>=2.90          # 语音反馈模块
+# 打包工具 | Outils d'empaquetage
+pyinstaller>=5.9.0     # 用于创建独立可执行文件 | Pour créer des fichiers exécutables autonomes
 
-# 测试工具
-pytest>=7.3.1          # 单元测试框架
-pytest-qt>=4.2.0       # Qt应用测试支持
+# 未来功能预留依赖 - 可选安装 | Dépendances réservées pour fonctionnalités futures - Installation optionnelle
+# 取消注释以下行来启用相应功能 | Décommentez les lignes suivantes pour activer les fonctionnalités correspondantes
 
-# 开发工具
-black>=23.3.0          # 代码格式化
-flake8>=6.0.0          # 代码质量检查
-isort>=5.12.0          # 导入语句排序
+# 数学运算和科学计算 | Calculs mathématiques et scientifiques
+# numpy>=1.24.0          # 数学运算库（当前使用Python内置math模块）| Bibliothèque de calculs mathématiques (utilise actuellement le module math intégré de Python)
 
-# 可选依赖 - 取消注释以启用
-# pyinstaller>=5.9.0   # 用于创建独立可执行文件
-# pygettext>=2.7       # 国际化支持工具
-# matplotlib>=3.7.1    # 图表可视化（如果需要更高级的图形展示）
-# python-i18n>=0.3.9   # 多语言支持
+# 图像处理功能 | Fonctionnalités de traitement d'images
+# opencv-python>=4.7.0   # 图像处理，眼动追踪支持 | Traitement d'images, support de suivi oculaire
+# pillow>=9.5.0          # 图像处理库 | Bibliothèque de traitement d'images
+
+# 眼动追踪功能 | Fonctionnalités de suivi oculaire
+# mediapipe>=0.10.0      # 眼动追踪预留接口 | Interface réservée pour le suivi oculaire
+
+# 语音反馈功能 | Fonctionnalités de retour vocal
+# pyttsx3>=2.90          # 语音反馈模块 | Module de retour vocal
+
+# 数据可视化 | Visualisation de données
+# matplotlib>=3.7.1     # 图表可视化（用于更高级的图形展示）| Visualisation de graphiques (pour l'affichage graphique avancé)
+
+# 国际化支持 | Support d'internationalisation
+# python-i18n>=0.3.9    # 多语言支持 | Support multilingue
+# pygettext>=2.7        # 国际化支持工具 | Outils de support d'internationalisation
+
+# 安装说明 | Instructions d'installation
+# Installation Instructions:
+# 
+# 1. 基础安装（仅核心功能）| Installation de base (fonctionnalités principales uniquement):
+#    pip install -r requirements.txt
+#
+# 2. 完整安装（包含所有功能）| Installation complète (toutes les fonctionnalités incluses):
+#    取消注释所需的可选依赖，然后运行 | Décommentez les dépendances optionnelles nécessaires, puis exécutez:
+#    pip install -r requirements.txt
+#
+# 3. 开发环境安装 | Installation de l'environnement de développement:
+#    pip install -r requirements.txt
+#    然后根据需要启用可选功能 | Puis activez les fonctionnalités optionnelles selon les besoins
+#
+# 注意事项 | Notes importantes:
+# - 确保Python版本 >= 3.8 | Assurez-vous que la version Python >= 3.8
+# - 推荐使用虚拟环境 | Utilisation d'un environnement virtuel recommandée
+# - 某些依赖可能需要系统级库支持 | Certaines dépendances peuvent nécessiter le support de bibliothèques système
