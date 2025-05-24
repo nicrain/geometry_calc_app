@@ -226,21 +226,45 @@ class Canvas(QWidget):
         if not self.temp_shape or not self.line_start_point:
             return
         
-        # 设置虚线样式和无填充
+        # 设置虚线样式，无填充
         painter.setPen(QPen(QColor("#999999"), 1, Qt.PenStyle.DashLine))
         painter.setBrush(Qt.BrushStyle.NoBrush)  # 确保无填充
         
         # 根据当前形状类型绘制临时预览
-        if hasattr(self, 'current_shape') and self.current_shape:
-            if self.current_shape in ["rectangle", "rectangle_preview"]:
+        if hasattr(self, 'current_shape'):
+            if self.current_shape == "rectangle" or self.current_shape == "rectangle_preview":
                 # 绘制矩形预览
                 x1, y1 = self.line_start_point
                 x2, y2 = self.temp_shape
+                
+                # 计算矩形边界
                 min_x, max_x = min(x1, x2), max(x1, x2)
                 min_y, max_y = min(y1, y2), max(y1, y2)
-                painter.drawRect(int(min_x), int(min_y), int(max_x - min_x), int(max_y - min_y))
+                width = max_x - min_x
+                height = max_y - min_y
+                
+                # 绘制矩形（无填充）
+                painter.drawRect(int(min_x), int(min_y), int(width), int(height))
+                
+                # 计算实际尺寸
+                real_width = width / self.grid_spacing
+                real_height = height / self.grid_spacing
+                
+                # 绘制尺寸标签
+                painter.setPen(QPen(QColor("#333333"), 1))
+                painter.setBrush(Qt.BrushStyle.NoBrush)
+                font = QFont("Arial", 9)
+                painter.setFont(font)
+                
+                # 在上边绘制宽度
+                mid_x_top = int((min_x + max_x) / 2)
+                painter.drawText(mid_x_top - 15, int(min_y) - 5, f"{real_width:.1f}")
+                
+                # 在左边绘制高度
+                mid_y_left = int((min_y + max_y) / 2)
+                painter.drawText(int(min_x) - 25, mid_y_left + 5, f"{real_height:.1f}")
             
-            elif self.current_shape in ["circle", "circle_preview"]:
+            elif self.current_shape == "circle" or self.current_shape == "circle_preview":
                 # 绘制圆形预览
                 center_x, center_y = self.line_start_point
                 temp_x, temp_y = self.temp_shape
@@ -248,7 +272,7 @@ class Canvas(QWidget):
                 painter.drawEllipse(int(center_x - radius), int(center_y - radius),
                                   int(radius * 2), int(radius * 2))
             
-            elif self.current_shape in ["triangle", "triangle_preview"]:
+            elif self.current_shape == "triangle" or self.current_shape == "triangle_preview":
                 # 绘制三角形预览
                 x1, y1 = self.line_start_point
                 temp_x, temp_y = self.temp_shape
@@ -268,7 +292,7 @@ class Canvas(QWidget):
                     # 只绘制从第一个点到鼠标的线
                     painter.drawLine(int(x1), int(y1), int(temp_x), int(temp_y))
             
-            elif self.current_shape in ["line", "line_preview"] or self.current_shape is None:
+            else:
                 # 默认绘制线段
                 x1, y1 = self.line_start_point
                 x2, y2 = self.temp_shape

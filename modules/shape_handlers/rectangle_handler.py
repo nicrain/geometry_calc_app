@@ -158,10 +158,43 @@ class RectangleHandler(ShapeHandler):
 
     def handle_mouse_move(self, x: float, y: float):
         """处理鼠标移动事件"""
-        if self.start_point:
-            screen_x, screen_y = self.canvas.grid_to_screen(x, y)
-            self.canvas.temp_shape = (screen_x, screen_y)
-            self.canvas.update()
+        if not self.start_point:
+            # 未点击第一点时，显示当前位置作为起点
+            if hasattr(self.canvas, 'shape_preview'):
+                preview_data = {
+                    'type': 'rectangle_preview_start',
+                    'x': x, 'y': y
+                }
+                self.canvas.shape_preview.emit(preview_data)
+            return
+            
+        # 转换为屏幕坐标
+        screen_x, screen_y = self.canvas.grid_to_screen(x, y)
+        
+        # 设置临时形状
+        self.canvas.temp_shape = (screen_x, screen_y)
+        
+        # 发送实时矩形信息
+        if hasattr(self.canvas, 'shape_preview'):
+            x1, y1 = self.start_point
+            grid_x1, grid_y1 = self.canvas.screen_to_grid(x1, y1)
+            
+            # 计算宽度和高度
+            width = abs(x - grid_x1)
+            height = abs(y - grid_y1)
+            area = width * height
+            
+            preview_data = {
+                'type': 'rectangle_preview',
+                'x1': grid_x1, 'y1': grid_y1,
+                'x2': x, 'y2': y,
+                'width': width,
+                'height': height,
+                'area': area
+            }
+            self.canvas.shape_preview.emit(preview_data)
+        
+        self.canvas.update()
 
     def handle_mouse_release(self, x: float, y: float):
         """处理鼠标释放事件"""

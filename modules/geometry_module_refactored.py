@@ -335,6 +335,26 @@ class GeometryModuleRefactored(BaseModule):
             info = f"<b>Ligne:</b> Début({x1:.2f}, {y1:.2f}) → Fin({x2:.2f}, {y2:.2f}) | "
             info += f"<b>Longueur:</b> {length:.2f} | <b>Angle:</b> {angle:.1f}°"
             self.info_panel.setText(info)
+        elif preview_data.get('type') == 'rectangle_preview_start':
+            # 显示矩形起点实时坐标
+            x = preview_data.get('x', 0)
+            y = preview_data.get('y', 0)
+            info = f"<b>Coin de départ:</b> ({x:.2f}, {y:.2f})"
+            self.info_panel.setText(info)
+        elif preview_data.get('type') == 'rectangle_preview':
+            # 显示完整矩形信息
+            x1 = preview_data.get('x1', 0)
+            y1 = preview_data.get('y1', 0)
+            x2 = preview_data.get('x2', 0)
+            y2 = preview_data.get('y2', 0)
+            width = preview_data.get('width', 0)
+            height = preview_data.get('height', 0)
+            area = preview_data.get('area', 0)
+            
+            info = f"<b>Rectangle:</b> ({x1:.2f}, {y1:.2f}) → ({x2:.2f}, {y2:.2f}) | "
+            info += f"<b>Largeur:</b> {width:.2f} | <b>Hauteur:</b> {height:.2f} | "
+            info += f"<b>Aire:</b> {area:.2f}"
+            self.info_panel.setText(info)
 
     def update_coordinate_info(self, point_data: Dict[str, Any]):
         """更新坐标信息"""
