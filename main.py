@@ -28,15 +28,15 @@ try:
         from modules.geometry_module_refactored import GeometryModuleRefactored
         from modules.calculator_module_pyqt import CalculatorModule
         # 可以添加一个调试打印
-        print("模块导入成功")
+        print("Modules importés avec succès")
     except ImportError as e:
-        print(f"错误：无法导入应用程序模块: {e}")
-        print("请确保modules目录存在且包含所需的.py文件")
+        print(f"Erreur: Impossible d'importer les modules de l'application: {e}")
+        print("Veuillez vous assurer que le répertoire modules existe et contient les fichiers .py requis")
         sys.exit(1)
         
 except ImportError as e:
-    print(f"错误：无法导入PyQt6模块: {e}")
-    print("请安装PyQt6：pip install PyQt6")
+    print(f"Erreur: Impossible d'importer les modules PyQt6: {e}")
+    print("Veuillez installer PyQt6: pip install PyQt6")
     sys.exit(1)
 
 class MainApp(QMainWindow):
@@ -144,7 +144,7 @@ if __name__ == "__main__":
     try:
         # 添加更多错误检查
         if not os.path.exists(os.path.join(os.path.dirname(__file__), "modules")):
-            print("错误：modules目录不存在")
+            print("Erreur: Le répertoire modules n'existe pas")
             sys.exit(1)
             
         # 检查必要模块文件
@@ -156,7 +156,7 @@ if __name__ == "__main__":
         
         for module in required_modules:
             if not os.path.exists(os.path.join(os.path.dirname(__file__), "modules", module)):
-                print(f"错误：缺少必要模块文件 {module}")
+                print(f"Erreur: Fichier de module requis manquant {module}")
                 sys.exit(1)
                 
         app = QApplication(sys.argv)
@@ -164,7 +164,7 @@ if __name__ == "__main__":
         window.show()
         sys.exit(app.exec())
     except Exception as e:
-        print(f"启动应用程序时出错: {str(e)}")
+        print(f"Erreur lors du démarrage de l'application: {str(e)}")
         import traceback
         traceback.print_exc()  # 打印详细错误信息
         sys.exit(1)

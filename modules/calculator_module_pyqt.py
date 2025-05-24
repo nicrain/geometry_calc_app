@@ -129,13 +129,13 @@ class CalculatorModule(BaseModule):
             
             self.result_display.setText(str(result))
         except Exception as e:
-            self.result_display.setText("Error")
-            print(f"计算错误: {e}")
+            self.result_display.setText("Erreur")
+            print(f"Erreur de calcul: {e}")
             
     def _handle_backspace(self):
         """处理退格功能"""
         current_text = self.result_display.text()
-        if current_text != "0" and current_text != "Error":
+        if current_text != "0" and current_text != "Erreur":
             if len(current_text) == 1:
                 self.result_display.setText("0")
             else:
@@ -144,7 +144,7 @@ class CalculatorModule(BaseModule):
     def _append_to_display(self, value):
         """向显示屏添加字符"""
         current_text = self.result_display.text()
-        if current_text == "0" or current_text == "Error":
+        if current_text == "0" or current_text == "Erreur":
             self.result_display.setText(value)
         else:
             self.result_display.setText(current_text + value)

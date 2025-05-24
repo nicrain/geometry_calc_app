@@ -4,10 +4,10 @@ class EyeTrackerModule:
         self.tracker = None
 
     def start_tracking(self):
-        print("Eye tracking démarré (placeholder) — futur support MediaPipe")
+        print("Suivi oculaire démarré (placeholder) — support futur MediaPipe")
 
     def get_gaze_position(self):
         return (0, 0)
 
     def stop_tracking(self):
-        print("Eye tracking arrêté")
+        print("Suivi oculaire arrêté")
