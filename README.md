@@ -1,404 +1,345 @@
-# 🧠 儿童几何与计算学习软件
+# Calculatrice de Géométrie
 
-一个面向小学阶段儿童的几何与计算学习软件，采用PyQt6开发，支持眼动控制和实时反馈。为儿童提供友好的交互界面，帮助他们掌握基础几何知识和数学计算技能。
+Une application de calculatrice de géométrie moderne construite avec PyQt6. Cette application permet aux utilisateurs de calculer l'aire et le périmètre de diverses formes géométriques avec une interface utilisateur intuitive et responsive, spécialement conçue pour les enfants en âge scolaire.
 
-## ✨ 项目亮点
+## Fonctionnalités
 
-- **直观交互**: 精心设计的法语界面适合儿童使用，色彩丰富、操作简单
-- **教育价值**: 通过视觉化方式帮助理解抽象数学概念
-- **多模态输入**: 支持传统鼠标/键盘控制，预留眼动追踪接口
-- **即时反馈**: 操作结果实时呈现，强化学习效果
-- **扩展性强**: 模块化设计，便于未来功能扩展
-- **Metro风格**: 现代化的界面设计，清晰的视觉层次
+- **Formes Multiples** : Supporte le calcul pour les rectangles, cercles, triangles et trapèzes
+- **Interface Intuitive** : Interface utilisateur moderne et conviviale avec un design responsive
+- **Calculs en Temps Réel** : Résultats instantanés lors de la saisie des valeurs
+- **Validation des Entrées** : Validation robuste des entrées utilisateur avec gestion d'erreurs
+- **Design Responsive** : Fonctionne parfaitement sur desktop et mobile
+- **Thème Sombre** : Interface moderne avec un thème sombre élégant
+- **Support Multi-Modal** : Interface traditionnelle avec préparation pour le contrôle oculaire
 
-## 📦 功能模块
+## Formes Supportées
 
-### 几何绘图模块 (Module de Géométrie)
-- 绘制基础几何图形：点(Point)、线段(Ligne)、圆(Cercle)、三角形(Triangle)、矩形(Rectangle)
-- 测量图形属性：长度、角度、面积
-- 支持图形变换：旋转、缩放、移动
-- 实时绘图和交互式编辑
+### Rectangle
+- **Aire** : longueur × largeur
+- **Périmètre** : 2 × (longueur + largeur)
 
-### 计算工具模块 (Calculatrice)
-- 基础四则运算：加、减、乘、除
-- 分数运算支持
-- 直观的计算过程展示
-- 友好的按钮式界面
+### Cercle
+- **Aire** : π × rayon²
+- **Périmètre** : 2 × π × rayon
 
-### 眼动追踪接口（预留）
-- 支持MediaPipe眼动追踪集成
-- 兼容Tobii Eye Tracker 5等专业设备
-- 提供可定制的眼控交互模式
+### Triangle
+- **Aire** : (base × hauteur) ÷ 2
+- **Périmètre** : côté1 + côté2 + côté3
 
-### 反馈系统
-- 视觉反馈：颜色变化、动画效果
-- 声音反馈：操作提示音（pyttsx3）
-- 成功/错误消息提示框
+### Trapèze
+- **Aire** : ((base1 + base2) × hauteur) ÷ 2
+- **Périmètre** : base1 + base2 + côté1 + côté2
 
-## 🛠️ 技术特性
+## 🛠️ Technologies et Dépendances
 
-### 当前使用的依赖
-- **PyQt6 (≥6.5.0)** - 现代化的跨平台GUI框架，项目核心依赖
-- **Python内置模块** - math、pathlib等，用于基础数学计算和文件操作
+### Dépendances Actuellement Utilisées
 
-### 开发工具依赖
-- **pytest (≥7.3.1)** - 单元测试框架
-- **pytest-qt (≥4.2.0)** - PyQt6应用程序的测试支持
-- **black (≥23.3.0)** - 代码格式化工具
-- **flake8 (≥6.0.0)** - 代码质量检查工具
-- **isort (≥5.12.0)** - 导入语句排序工具
-- **pyinstaller (≥5.9.0)** - 创建独立可执行文件
+#### Dépendance Principale
+- **PyQt6 (≥6.5.0)** - Framework GUI multiplateforme moderne, dépendance principale du projet
+- **Modules Python intégrés** - math, pathlib, etc. pour les calculs mathématiques de base et les opérations de fichiers
 
-### 预留功能依赖（暂未使用）
-以下依赖已在requirements.txt中注释，用于未来功能扩展：
+#### Outils de Développement
+- **pytest (≥7.3.1)** - Framework de tests unitaires
+- **pytest-qt (≥4.2.0)** - Support de test pour les applications PyQt6
+- **black (≥23.3.0)** - Outil de formatage de code
+- **flake8 (≥6.0.0)** - Outil de vérification de la qualité du code
+- **isort (≥5.12.0)** - Outil de tri des déclarations d'importation
+- **pyinstaller (≥5.9.0)** - Création de fichiers exécutables autonomes
 
-#### 高级数学计算
-- **NumPy (≥1.24.0)** - 用于复杂数学运算和矩阵计算
-  - *当前状态*：使用Python内置math模块
-  - *计划用途*：几何变换、统计分析、高级数学函数
+### Dépendances Réservées (Non Utilisées Actuellement)
 
-#### 眼动追踪技术
-- **MediaPipe (≥0.10.0)** - Google的机器学习视觉库
-  - *当前状态*：预留接口，未实现
-  - *计划用途*：实时眼动追踪、眼控交互
-- **OpenCV (≥4.7.0)** - 计算机视觉库
-  - *当前状态*：未使用
-  - *计划用途*：图像处理、眼动数据预处理
+Les dépendances suivantes sont commentées dans requirements.txt et réservées pour les extensions futures :
 
-#### 图像处理功能
-- **Pillow (≥9.5.0)** - Python图像处理库
-  - *当前状态*：未使用
-  - *计划用途*：图像编辑、格式转换、图形导出
+#### Calculs Mathématiques Avancés
+- **NumPy (≥1.24.0)** - Pour les calculs mathématiques complexes et les opérations matricielles
+  - *État actuel* : Utilise le module math intégré de Python
+  - *Usage prévu* : Transformations géométriques, analyses statistiques, fonctions mathématiques avancées
 
-#### 语音反馈系统
-- **pyttsx3 (≥2.90)** - 文本转语音引擎
-  - *当前状态*：预留功能
-  - *计划用途*：语音提示、操作反馈、辅助学习
+#### Technologies de Suivi Oculaire
+- **MediaPipe (≥0.10.0)** - Bibliothèque de vision par apprentissage automatique de Google
+  - *État actuel* : Interface réservée, non implémentée
+  - *Usage prévu* : Suivi oculaire en temps réel, interaction par contrôle oculaire
+- **OpenCV (≥4.7.0)** - Bibliothèque de vision par ordinateur
+  - *État actuel* : Non utilisée
+  - *Usage prévu* : Traitement d'images, préprocessing des données de suivi oculaire
 
-#### 数据可视化
-- **Matplotlib (≥3.7.1)** - 科学计算可视化库
-  - *当前状态*：未使用
-  - *计划用途*：统计图表、学习进度可视化、数据分析
+#### Fonctionnalités de Traitement d'Images
+- **Pillow (≥9.5.0)** - Bibliothèque de traitement d'images Python
+  - *État actuel* : Non utilisée
+  - *Usage prévu* : Édition d'images, conversion de formats, export graphique
 
-#### 国际化支持
-- **python-i18n (≥0.3.9)** - 多语言支持库
-  - *当前状态*：硬编码法语界面
-  - *计划用途*：动态语言切换、多语言界面
-- **pygettext (≥2.7)** - 国际化工具
-  - *当前状态*：未使用
-  - *计划用途*：翻译文件管理、本地化工具
+#### Système de Retour Vocal
+- **pyttsx3 (≥2.90)** - Moteur de synthèse vocale
+  - *État actuel* : Fonctionnalité réservée
+  - *Usage prévu* : Invites vocales, retour d'opérations, assistance d'apprentissage
 
-## 🚀 快速开始
+#### Visualisation de Données
+- **Matplotlib (≥3.7.1)** - Bibliothèque de visualisation pour le calcul scientifique
+  - *État actuel* : Non utilisée
+  - *Usage prévu* : Graphiques statistiques, visualisation des progrès d'apprentissage, analyse de données
 
-### 系统要求
-- Python 3.8+ （推荐 3.9+）
-- 操作系统：Windows 10+、macOS 10.14+、Linux（Ubuntu 18.04+）
-- 内存：建议 4GB+ RAM
-- 显卡：支持OpenGL 2.0+（用于图形渲染）
+#### Support d'Internationalisation
+- **python-i18n (≥0.3.9)** - Bibliothèque de support multilingue
+  - *État actuel* : Interface française codée en dur
+  - *Usage prévu* : Commutation dynamique de langues, interface multilingue
+- **pygettext (≥2.7)** - Outils d'internationalisation
+  - *État actuel* : Non utilisé
+  - *Usage prévu* : Gestion des fichiers de traduction, outils de localisation
 
-### 安装步骤
+## Comment Utiliser
 
-1. **克隆仓库**：
+1. **Sélectionner une Forme** : Choisissez la forme géométrique que vous souhaitez calculer dans la liste déroulante
+2. **Saisir les Dimensions** : Entrez les dimensions requises dans les champs de saisie
+3. **Voir les Résultats** : L'aire et le périmètre sont calculés automatiquement et affichés en temps réel
+4. **Changer de Forme** : Sélectionnez une autre forme pour effectuer différents calculs
 
-```bash
-git clone https://github.com/nicrain/geometry_calc_app.git
-cd geometry_calc_app
+## Structure du Projet
+
+```
+geometry_calc_app/
+├── main.py                              # Point d'entrée de l'application PyQt6
+├── requirements.txt                     # Liste des dépendances du projet
+├── README.md                           # Documentation principale du projet
+├── README_CN.md                        # Documentation détaillée en chinois
+└── modules/                            # Package des modules fonctionnels
+    ├── __init__.py                     # Fichier marqueur de package Python
+    ├── ui_components_pyqt.py           # Composants UI Metro (boutons, composants de base)
+    ├── geometry_module_refactored.py   # Module de dessin géométrique (version refactorisée)
+    ├── calculator_module_pyqt.py       # Module calculatrice
+    ├── eye_tracker_module.py           # Module de suivi oculaire (interface réservée)
+    ├── canvas.py                       # Composant canvas de dessin
+    ├── shapes.py                       # Définitions des formes et énumérations
+    ├── factories.py                    # Classes Factory (gestionnaires et panneaux)
+    ├── shape_handlers/                 # Répertoire des gestionnaires de formes
+    │   ├── __init__.py                 # Classe de base ShapeHandler
+    │   ├── point_handler.py            # Gestionnaire de forme point
+    │   ├── line_handler.py             # Gestionnaire de forme ligne
+    │   ├── rectangle_handler.py        # Gestionnaire de rectangle
+    │   ├── circle_handler.py           # Gestionnaire de cercle
+    │   └── triangle_handler.py         # Gestionnaire de triangle
+    ├── property_panels/                # Répertoire des panneaux de propriétés
+    │   ├── __init__.py                 # Classe de base PropertyPanel
+    │   ├── point_properties_panel.py   # Panneau de propriétés de point
+    │   ├── line_properties_panel.py    # Panneau de propriétés de ligne
+    │   ├── rectangle_properties_panel.py # Panneau de propriétés de rectangle
+    │   ├── circle_properties_panel.py  # Panneau de propriétés de cercle
+    │   └── triangle_properties_panel.py # Panneau de propriétés de triangle
+    └── shapes/                         # Répertoire des définitions de formes
+        ├── __init__.py                 # Types de formes et énumérations
+        └── point.py                    # Définition spécialisée de la classe Point
 ```
 
-2. **创建并激活虚拟环境**（强烈推荐）：
+## Installation et Configuration
 
+### Prérequis Système
+- Python 3.8+ (recommandé 3.9+)
+- Système d'exploitation : Windows 10+, macOS 10.14+, Linux (Ubuntu 18.04+)
+- Mémoire : 4GB+ RAM recommandé
+- Carte graphique : Support OpenGL 2.0+ (pour le rendu graphique)
+
+### Étapes d'Installation
+
+1. **Cloner le Répertoire**
+   ```bash
+   git clone [url-du-repo]
+   cd geometry_calc_app
+   ```
+
+2. **Créer et Activer un Environnement Virtuel** (fortement recommandé)
+   ```bash
+   # Créer un environnement virtuel
+   python -m venv .venv
+   
+   # Activer l'environnement virtuel
+   # macOS/Linux:
+   source .venv/bin/activate
+   # Windows:
+   .venv\Scripts\activate
+   ```
+
+3. **Installer les Dépendances**
+   ```bash
+   # Installation de base (uniquement les dépendances actuellement utilisées)
+   pip install -r requirements.txt
+   
+   # Vérifier l'installation
+   python -c "import PyQt6; print('PyQt6 installé avec succès')"
+   ```
+
+4. **Optionnel : Activer les Fonctionnalités Réservées**
+
+   Pour activer des fonctionnalités spécifiques réservées, éditez le fichier requirements.txt et décommentez les lignes de dépendances correspondantes :
+
+   ```bash
+   # Activer les fonctionnalités de suivi oculaire
+   pip install mediapipe>=0.10.0 opencv-python>=4.7.0
+   
+   # Activer le retour vocal
+   pip install pyttsx3>=2.90
+   
+   # Activer les calculs mathématiques avancés
+   pip install numpy>=1.24.0
+   
+   # Activer la visualisation de données
+   pip install matplotlib>=3.7.1
+   
+   # Activer le support multilingue
+   pip install python-i18n>=0.3.9
+   ```
+
+5. **Exécuter le Programme**
+   ```bash
+   python main.py
+   ```
+
+### Résolution des Problèmes Courants
+
+**Q: Erreur "Impossible d'importer les modules PyQt6"**
 ```bash
-# 创建虚拟环境
-python -m venv .venv
-
-# 激活虚拟环境
-# macOS/Linux:
-source .venv/bin/activate
-# Windows:
-.venv\Scripts\activate
-```
-
-3. **安装依赖**：
-
-```bash
-# 基础安装（仅安装当前使用的依赖）
-pip install -r requirements.txt
-
-# 验证安装
-python -c "import PyQt6; print('PyQt6 安装成功')"
-```
-
-4. **可选：启用预留功能**
-
-如需启用特定的预留功能，请编辑requirements.txt文件，取消注释相应的依赖行：
-
-```bash
-# 启用眼动追踪功能
-pip install mediapipe>=0.10.0 opencv-python>=4.7.0
-
-# 启用语音反馈
-pip install pyttsx3>=2.90
-
-# 启用高级数学计算
-pip install numpy>=1.24.0
-
-# 启用数据可视化
-pip install matplotlib>=3.7.1
-
-# 启用多语言支持
-pip install python-i18n>=0.3.9
-```
-
-5. **运行程序**：
-
-```bash
-python main.py
-```
-
-### 常见问题解决
-
-**Q: 出现 "Impossible d'importer les modules PyQt6" 错误**
-```bash
-# 解决方案：重新安装PyQt6
+# Solution : Réinstaller PyQt6
 pip uninstall PyQt6 PyQt6-Qt6 PyQt6-sip
 pip install PyQt6>=6.5.0
 ```
 
-**Q: 模块导入失败**
+**Q: Échec d'importation de module**
 ```bash
-# 确保在正确的目录中运行
-ls modules/  # 应该看到 .py 文件
+# S'assurer d'être dans le bon répertoire
+ls modules/  # Devrait afficher les fichiers .py
 python -c "import sys; print(sys.path)"
 ```
 
-**Q: 想要启用眼动追踪功能**
+**Q: Souhait d'activer les fonctionnalités de suivi oculaire**
 ```bash
-# 取消注释requirements.txt中的相关行，然后安装
+# Décommenter les lignes pertinentes dans requirements.txt, puis installer
 pip install mediapipe>=0.10.0 opencv-python>=4.7.0
-# 注意：此功能目前为预留接口，需要额外开发
+# Note : Cette fonctionnalité est actuellement une interface réservée nécessitant un développement supplémentaire
 ```
 
-### 运行选项
+### Options d'Exécution
 
-程序支持以下命令行参数：
+Le programme supporte les arguments de ligne de commande suivants :
 
 ```bash
-# 基础运行
+# Exécution de base
 python main.py
 
-# 调试模式
+# Mode débogage
 python main.py --debug
 
-# 指定窗口大小
+# Spécifier la taille de fenêtre
 python main.py --width 1280 --height 800
 
-# 禁用动画效果（适用于低性能设备）
+# Désactiver les effets d'animation (pour les appareils à faibles performances)
 python main.py --no-animations
 
-# 指定语言（如支持）
+# Spécifier la langue (si supporté)
 python main.py --lang fr
 
-# 查看帮助信息
+# Voir les informations d'aide
 python main.py --help
 ```
 
-## 🎯 使用指南
+## Caractéristiques du Code
 
-### 启动界面
-- 应用程序启动后显示主菜单，包含两个大按钮
-- **Géométrie（几何）**: 绿色按钮，进入几何绘图模块
-- **Calculatrice（计算器）**: 蓝色按钮，进入计算工具模块
+### Structure PyQt6
+- Structure sémantique avec des composants appropriés
+- Design responsive utilisant les layouts PyQt6
+- Gestion d'événements moderne et réactive
 
-### 几何模块使用
-1. 选择绘图工具（点、线、圆、三角形、矩形）
-2. 在画布上点击或拖拽创建图形
-3. 使用测量工具查看图形属性
-4. 支持撤销/重做操作
+### CSS et Styling
+- Variables de couleur personnalisées pour une maintenance facile
+- Animations fluides et transitions
+- Thème moderne avec un excellent contraste
 
-### 计算器模块使用
-1. 点击数字和运算符按钮
-2. 实时显示计算过程
-3. 支持连续运算和结果重用
+### Logique Python
+- Code modulaire avec séparation des préoccupations
+- Validation robuste des entrées utilisateur
+- Gestion d'erreurs avec messages utilisateur informatifs
+- Calculs en temps réel avec performance optimisée
 
-## 💻 开发指南
+## Validation des Entrées
 
-### 开发环境设置
+L'application inclut une validation complète des entrées :
+- **Vérification des Nombres** : S'assure que toutes les entrées sont des nombres valides
+- **Valeurs Positives** : Valide que toutes les dimensions sont positives
+- **Messages d'Erreur** : Fournit des messages d'erreur clairs et utiles
+- **Mise en Évidence Visuelle** : Met en évidence les champs avec des erreurs
 
-```bash
-# 克隆并进入项目目录
-git clone <repository-url>
-cd geometry_calc_app
+## Compatibilité
 
-# 安装开发依赖
-pip install -r requirements.txt
+Cette application est compatible avec :
+- **Systèmes d'exploitation** : Windows 10+, macOS 10.14+, Linux (Ubuntu 18.04+)
+- **Python** : 3.8+ (recommandé 3.9+)
+- **PyQt6** : 6.5.0+
 
-# 代码格式化
-black .
+## 🔮 Améliorations Futures
 
-# 代码质量检查
-flake8 --max-line-length=88 --extend-ignore=E203
+### Objectifs à Court Terme (3 mois)
+- [ ] Compléter les fonctionnalités d'édition graphique du module géométrie
+- [ ] Ajouter des fonctionnalités de calcul avancées à la calculatrice
+- [ ] Implémenter le système de retour vocal de base (activer pyttsx3)
+- [ ] Améliorer la couverture des tests unitaires (objectif 80%+)
 
-# 导入排序
-isort .
+### Objectifs à Moyen Terme (6 mois)
+- [ ] Intégrer les fonctionnalités de suivi oculaire MediaPipe
+- [ ] Ajouter le support multilingue (activer python-i18n, supporter chinois, anglais, français)
+- [ ] Implémenter la persistance des données (sauvegarder les progrès utilisateur)
+- [ ] Ajouter plus de formes géométriques : trapèzes, polygones, etc.
+- [ ] Intégrer NumPy pour les calculs mathématiques avancés
 
-# 运行测试
-pytest tests/ -v
-```
+### Objectifs à Long Terme (1 an)
+- [ ] Développer un mode d'enseignement et un apprentissage guidé
+- [ ] Ajouter des éléments de gamification et des mécanismes de récompense
+- [ ] Supporter les fonctionnalités de collaboration en réseau
+- [ ] Développer une version mobile (PyQt for Mobile)
+- [ ] Intégrer des fonctionnalités d'apprentissage assisté par IA
+- [ ] Ajouter des fonctionnalités de visualisation de données (activer Matplotlib)
 
-### 项目结构
+## 📊 Explication de la Gestion des Dépendances
 
-```
-📂 geometry_calc_app/
-├── 📄 main.py                           # 🚀 主程序入口
-├── 📄 requirements.txt                  # 📦 依赖包列表
-├── 📄 README.md                         # 📖 项目说明文档
-├── 📂 modules/                          # 🧩 功能模块目录
-│   ├── 📄 ui_components_pyqt.py         # 🎨 UI组件模块（按钮、基础组件）
-│   ├── 📄 geometry_module_refactored.py # 📐 几何绘图模块（重构版）
-│   ├── 📄 calculator_module_pyqt.py     # 🔢 计算器模块
-│   └── 📄 eye_tracker_module.py         # 👁️ 眼动追踪模块（预留接口）
-├── 📂 tests/                            # 🧪 测试目录
-│   ├── 📄 test_geometry.py              # 几何模块测试
-│   ├── 📄 test_calculator.py            # 计算器模块测试
-│   └── 📄 test_ui_components.py         # UI组件测试
-├── 📂 docs/                             # 📚 文档目录
-│   ├── 📄 development.md                # 开发文档
-│   ├── 📄 api_reference.md              # API参考
-│   └── 📂 images/                       # 截图和图示
-├── 📂 resources/                        # 🎭 资源文件目录
-│   ├── 📂 icons/                        # 图标文件
-│   ├── 📂 sounds/                       # 音效文件
-│   └── 📂 styles/                       # 样式表文件
-└── 📂 scripts/                          # 🔧 实用脚本
-    ├── 📄 build.py                      # 构建脚本
-    └── 📄 setup_dev.py                  # 开发环境设置脚本
-```
+### Dépendances Principales (Obligatoires)
+La version actuelle ne nécessite que l'installation de PyQt6, toutes les autres fonctionnalités sont implémentées en utilisant les modules Python intégrés.
 
-### 架构设计
+### Dépendances Optionnelles (Activation selon les Besoins)
+Selon les fonctionnalités requises, vous pouvez installer sélectivement les dépendances réservées :
 
-```
-┌─────────────────────────────────────────┐
-│                MainApp                  │  ← 主应用程序类
-│  ┌─────────────────────────────────────┐│
-│  │           Home Widget               ││  ← 主页面容器
-│  │  ┌─────────────┐ ┌─────────────────┐││
-│  │  │ Géométrie   │ │ Calculatrice    │││  ← 功能入口按钮
-│  │  │   Button    │ │     Button      │││
-│  │  └─────────────┘ └─────────────────┘││
-│  └─────────────────────────────────────┘│
-│  ┌─────────────────────────────────────┐│
-│  │          Module Widget              ││  ← 功能模块容器
-│  │  ┌─────────────────────────────────┐││
-│  │  │    GeometryModuleRefactored     │││  ← 几何模块
-│  │  └─────────────────────────────────┘││
-│  │  ┌─────────────────────────────────┐││
-│  │  │      CalculatorModule           │││  ← 计算器模块
-│  │  └─────────────────────────────────┘││
-│  └─────────────────────────────────────┘│
-└─────────────────────────────────────────┘
-```
+- **Suivi oculaire** : `mediapipe`, `opencv-python`
+- **Retour vocal** : `pyttsx3`
+- **Mathématiques avancées** : `numpy`
+- **Visualisation de données** : `matplotlib`
+- **Support multilingue** : `python-i18n`, `pygettext`
+- **Traitement d'images** : `pillow`
 
-### 编码规范
+### Dépendances de Développement
+Les outils pour l'assurance qualité du code et les tests sont inclus dans requirements.txt.
 
-- **代码格式**: 使用 black 进行格式化
-- **导入排序**: 使用 isort 排序导入语句
-- **代码质量**: 使用 flake8 检查代码质量
-- **文档字符串**: 所有公共方法必须包含docstring
-- **类型提示**: 推荐使用类型提示提高代码可读性
+## Contribuer
 
-### 贡献指南
+Les contributions sont les bienvenues ! N'hésitez pas à :
+1. Fork le projet
+2. Créer une branche pour votre fonctionnalité
+3. Commiter vos changements
+4. Pusher vers la branche
+5. Ouvrir une Pull Request
 
-1. Fork 项目仓库
-2. 创建功能分支：`git checkout -b feature/new-feature`
-3. 提交更改：`git commit -am 'Add new feature'`
-4. 推送分支：`git push origin feature/new-feature`
-5. 提交 Pull Request
+## 🐛 Problèmes Connus
 
-## 🧪 测试
+- Sur certaines distributions Linux, des plugins de plateforme Qt supplémentaires peuvent être nécessaires
+- Les fonctionnalités de suivi oculaire sont actuellement des interfaces réservées nécessitant un développement supplémentaire
+- Des problèmes de mise à l'échelle d'interface peuvent exister sur les écrans haute DPI
+- Les dépendances réservées NumPy, MediaPipe, etc. ne sont pas encore intégrées dans le code
 
-```bash
-# 运行所有测试
-pytest
+## Licence
 
-# 运行特定模块测试
-pytest tests/test_geometry.py -v
+Ce projet est open source et disponible sous la [Licence MIT](LICENSE).
 
-# 运行测试并生成覆盖率报告
-pytest --cov=modules tests/
+## Support
 
-# 运行GUI测试
-pytest tests/test_ui_components.py::TestMetroButton -v
-```
-
-## 🔮 未来规划
-
-### 短期目标（3个月内）
-- [ ] 完成几何模块的图形编辑功能
-- [ ] 添加计算器的高级运算功能
-- [ ] 实现基础的声音反馈系统（启用pyttsx3）
-- [ ] 完善单元测试覆盖率（目标80%+）
-
-### 中期目标（6个月内）
-- [ ] 集成MediaPipe眼动追踪功能
-- [ ] 添加多语言支持（启用python-i18n，支持中文、英语、法语）
-- [ ] 实现数据持久化（保存用户进度）
-- [ ] 添加更多几何图形：梯形、多边形等
-- [ ] 集成NumPy进行高级数学计算
-
-### 长期目标（1年内）
-- [ ] 开发教学模式和引导式学习
-- [ ] 添加游戏化元素和奖励机制
-- [ ] 支持网络协作功能
-- [ ] 开发移动端版本（PyQt for Mobile）
-- [ ] 集成AI辅助学习功能
-- [ ] 添加数据可视化功能（启用Matplotlib）
-
-## 📊 依赖管理说明
-
-### 核心依赖（必需）
-当前版本只需要安装PyQt6，所有其他功能都基于Python内置模块实现。
-
-### 可选依赖（按需启用）
-根据需要的功能，可以选择性安装预留依赖：
-
-- **眼动追踪**: `mediapipe`, `opencv-python`
-- **语音反馈**: `pyttsx3`
-- **高级数学**: `numpy`
-- **数据可视化**: `matplotlib`
-- **多语言支持**: `python-i18n`, `pygettext`
-- **图像处理**: `pillow`
-
-### 开发依赖
-用于代码质量保证和测试的工具已包含在requirements.txt中。
-
-## 🐛 已知问题
-
-- 在某些Linux发行版上可能需要额外安装Qt平台插件
-- 眼动追踪功能目前为预留接口，需要额外开发
-- 高DPI显示器上可能存在界面缩放问题
-- 预留的NumPy、MediaPipe等依赖暂未集成到代码中
-
-## 📞 支持与反馈
-
-- **问题报告**: 请在GitHub Issues中提交
-- **功能建议**: 欢迎提交Feature Request
-- **开发交流**: 可以通过Discussions进行讨论
-
-## 📄 许可证
-
-MIT License - 详见 [LICENSE](LICENSE) 文件
-
-## 🙏 致谢
-
-感谢以下开源项目：
-- [PyQt6](https://www.riverbankcomputing.com/software/pyqt/) - 强大的GUI框架
-- [NumPy](https://numpy.org/) - 科学计算基础
-- [OpenCV](https://opencv.org/) - 计算机视觉库
-- [MediaPipe](https://mediapipe.dev/) - 机器学习解决方案
+Si vous rencontrez des problèmes ou avez des questions, n'hésitez pas à ouvrir une issue dans le répertoire du projet.
 
 ---
 
 <p align="center">
-    <i>🌟 为儿童打造的数学学习之旅 🌟</i><br>
-    <sub>让学习变得有趣而富有成效</sub>
+    <i>🌟 Un voyage d'apprentissage mathématique conçu pour les enfants 🌟</i><br>
+    <sub>Rendre l'apprentissage amusant et productif</sub>
 </p>
